@@ -1,5 +1,6 @@
 {
-  "name": "ts-proto",
+  "name": "@appmana/ts-proto",
+  "private": true,
   "version": "1.83.3",
   "description": "",
   "main": "build/plugin.js",
