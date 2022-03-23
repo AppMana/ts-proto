@@ -1,8 +1,8 @@
-import { MethodDescriptorProto, FileDescriptorProto, ServiceDescriptorProto } from 'ts-proto-descriptors';
-import { requestType, responseObservable, responsePromise, responseType } from './types';
-import { Code, code, imp, joinCode } from 'ts-poet';
 import { Context } from './context';
+import { requestType, responseObservable, responsePromise, responseType } from './types';
 import { assertInstanceOf, FormattedMethodDescriptor, maybePrefixPackage } from './utils';
+import { Code, code, imp, joinCode } from 'ts-poet';
+import { MethodDescriptorProto, FileDescriptorProto, ServiceDescriptorProto } from 'ts-proto-descriptors';
 
 const grpc = imp('grpc@@improbable-eng/grpc-web');
 const share = imp('share@rxjs/operators');
@@ -298,7 +298,7 @@ function createInvokeMethod() {
       metadata: grpc.Metadata | undefined
     ): ${Observable}<any> {
       // Status Response Codes (https://developers.google.com/maps-booking/reference/grpc-api/status_codes)
-      const upStreamCodes = [2, 4, 8, 9, 10, 13, 14, 15];
+      const upStreamCodes = [];
       const DEFAULT_TIMEOUT_TIME: number = 3_000;
       const request = { ..._request, ...methodDesc.requestType };
       const maybeCombinedMetadata =
