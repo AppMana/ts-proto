@@ -1,5 +1,6 @@
 /* eslint-disable */
-export const protobufPackage = 'google.protobuf';
+
+export const protobufPackage = "google.protobuf";
 
 /**
  * `Any` contains an arbitrary serialized protocol buffer message along with a
@@ -40,10 +41,13 @@ export const protobufPackage = 'google.protobuf';
  *  Example 4: Pack and unpack a message in Go
  *
  *      foo := &pb.Foo{...}
- *      any, err := ptypes.MarshalAny(foo)
+ *      any, err := anypb.New(foo)
+ *      if err != nil {
+ *        ...
+ *      }
  *      ...
  *      foo := &pb.Foo{}
- *      if err := ptypes.UnmarshalAny(any, foo); err != nil {
+ *      if err := any.UnmarshalTo(foo); err != nil {
  *        ...
  *      }
  *
@@ -52,7 +56,6 @@ export const protobufPackage = 'google.protobuf';
  * methods only use the fully qualified type name after the last '/'
  * in the type URL, for example "foo.bar.com/x/y.z" will yield type
  * name "y.z".
- *
  *
  * JSON
  * ====

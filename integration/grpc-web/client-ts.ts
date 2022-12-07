@@ -5,6 +5,8 @@ import { DashAPICredsClientImpl, DashStateClientImpl, GrpcWebImpl } from './exam
 import { grpc } from '@improbable-eng/grpc-web';
 
 const rpc = new GrpcWebImpl('http://localhost:9090', {
+  // Only necessary for tests running on node. Remove the
+  // transport config when actually using in the browser.
   transport: NodeHttpTransport(),
   debug: false,
   metadata: new grpc.Metadata({ SomeHeader: 'bar' }),
@@ -33,8 +35,8 @@ async function main() {
   }
 
   const obs = client.ActiveUserSettingsStream({});
-  await obs.forEach(value => {
-    console.log("Got", value);
+  await obs.forEach((value) => {
+    console.log('Got', value);
   });
 }
 

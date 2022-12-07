@@ -1,4 +1,4 @@
-import { Child_Type, Simple, SimpleWithWrappers, StateEnum, SimpleWithMap, OneOfMessage } from './simple';
+import { Child_Type, Simple, SimpleWithWrappers, StateEnum, SimpleWithMap, OneOfMessage, Numbers } from './simple';
 import { google, simple as pbjs } from './pbjs';
 import ISimple = pbjs.ISimple;
 import PbChild = pbjs.Child;
@@ -19,6 +19,7 @@ describe('simple json', () => {
       coins: [2, 4, 6],
       snacks: ['a', 'b'],
       oldStates: [PbState.ON, PbState.OFF],
+      enabled: false,
     };
     // when it goes to json and back to us
     const s2 = Simple.fromJSON(PbSimple.fromObject(s1).toJSON());
@@ -111,6 +112,7 @@ describe('simple json', () => {
       snacks: null,
       oldStates: null,
       id: null,
+      enabled: null,
     };
     const s2 = Simple.fromJSON(s1);
     expect(s2).toMatchInlineSnapshot(`
@@ -122,6 +124,7 @@ describe('simple json', () => {
         "child": undefined,
         "coins": Array [],
         "createdAt": undefined,
+        "enabled": false,
         "grandChildren": Array [],
         "name": "",
         "oldStates": Array [],
@@ -144,6 +147,7 @@ describe('simple json', () => {
         "child": undefined,
         "coins": Array [],
         "createdAt": undefined,
+        "enabled": false,
         "grandChildren": Array [],
         "name": "",
         "oldStates": Array [],
@@ -190,6 +194,7 @@ describe('simple json', () => {
         "intLookup": Object {
           "1": 0,
         },
+        "longLookup": Object {},
         "mapOfBytes": Object {},
         "mapOfStringValues": Object {},
         "mapOfTimestamps": Object {},
@@ -212,6 +217,7 @@ describe('simple json', () => {
       Object {
         "entitiesById": Object {},
         "intLookup": Object {},
+        "longLookup": Object {},
         "mapOfBytes": Object {},
         "mapOfStringValues": Object {},
         "mapOfTimestamps": Object {
@@ -236,12 +242,14 @@ describe('simple json', () => {
         b: new Uint8Array([1, 2, 3]),
       },
       mapOfStringValues: {},
+      longLookup: {},
     };
     const json = SimpleWithMap.toJSON(s1);
     expect(json).toMatchInlineSnapshot(`
       Object {
         "entitiesById": Object {},
         "intLookup": Object {},
+        "longLookup": Object {},
         "mapOfBytes": Object {
           "a": "AQI=",
           "b": "AQID",
@@ -265,6 +273,7 @@ describe('simple json', () => {
       Object {
         "entitiesById": Object {},
         "intLookup": Object {},
+        "longLookup": Object {},
         "mapOfBytes": Object {
           "a": Uint8Array [
             1,
@@ -301,6 +310,7 @@ describe('simple json', () => {
       blobs: [],
       blob: new Uint8Array(),
       birthday: undefined,
+      enabled: true,
     };
     expect(Simple.toJSON(s1)).toMatchInlineSnapshot(`
       Object {
@@ -317,6 +327,7 @@ describe('simple json', () => {
           6,
         ],
         "createdAt": "1970-01-01T00:00:01.000Z",
+        "enabled": true,
         "grandChildren": Array [
           Object {
             "name": "grand1",
@@ -433,6 +444,39 @@ describe('simple json', () => {
     expect(OneOfMessage.toJSON(s1)).toMatchInlineSnapshot(`
       Object {
         "first": "first",
+      }
+    `);
+  });
+
+  it('rounds numbers', () => {
+    const n1: Numbers = {
+      double: 1.1,
+      fixed32: 1.1,
+      fixed64: 1.1,
+      float: 1.1,
+      int32: 1.1,
+      int64: 1.1,
+      sfixed32: 1.1,
+      sfixed64: 1.1,
+      sint32: 1.1,
+      sint64: 1.1,
+      uint32: 1.1,
+      uint64: 1.1,
+    };
+    expect(Numbers.toJSON(n1)).toMatchInlineSnapshot(`
+      Object {
+        "double": 1.1,
+        "fixed32": 1,
+        "fixed64": 1,
+        "float": 1.1,
+        "int32": 1,
+        "int64": 1,
+        "sfixed32": 1,
+        "sfixed64": 1,
+        "sint32": 1,
+        "sint64": 1,
+        "uint32": 1,
+        "uint64": 1,
       }
     `);
   });

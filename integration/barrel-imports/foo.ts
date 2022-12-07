@@ -1,18 +1,19 @@
 /* eslint-disable */
-import { util, configure, Writer, Reader } from 'protobufjs/minimal';
-import * as Long from 'long';
-import { Bar } from './bar';
+import * as _m0 from "protobufjs/minimal";
+import { Bar } from "./bar";
 
 export interface Foo {
   name: string;
   bar: Bar | undefined;
 }
 
-const baseFoo: object = { name: '' };
+function createBaseFoo(): Foo {
+  return { name: "", bar: undefined };
+}
 
 export const Foo = {
-  encode(message: Foo, writer: Writer = Writer.create()): Writer {
-    if (message.name !== '') {
+  encode(message: Foo, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.name !== "") {
       writer.uint32(10).string(message.name);
     }
     if (message.bar !== undefined) {
@@ -21,10 +22,10 @@ export const Foo = {
     return writer;
   },
 
-  decode(input: Reader | Uint8Array, length?: number): Foo {
-    const reader = input instanceof Reader ? input : new Reader(input);
+  decode(input: _m0.Reader | Uint8Array, length?: number): Foo {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseFoo } as Foo;
+    const message = createBaseFoo();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -43,18 +44,10 @@ export const Foo = {
   },
 
   fromJSON(object: any): Foo {
-    const message = { ...baseFoo } as Foo;
-    if (object.name !== undefined && object.name !== null) {
-      message.name = String(object.name);
-    } else {
-      message.name = '';
-    }
-    if (object.bar !== undefined && object.bar !== null) {
-      message.bar = Bar.fromJSON(object.bar);
-    } else {
-      message.bar = undefined;
-    }
-    return message;
+    return {
+      name: isSet(object.name) ? String(object.name) : "",
+      bar: isSet(object.bar) ? Bar.fromJSON(object.bar) : undefined,
+    };
   },
 
   toJSON(message: Foo): unknown {
@@ -64,36 +57,25 @@ export const Foo = {
     return obj;
   },
 
-  fromPartial(object: DeepPartial<Foo>): Foo {
-    const message = { ...baseFoo } as Foo;
-    if (object.name !== undefined && object.name !== null) {
-      message.name = object.name;
-    } else {
-      message.name = '';
-    }
-    if (object.bar !== undefined && object.bar !== null) {
-      message.bar = Bar.fromPartial(object.bar);
-    } else {
-      message.bar = undefined;
-    }
+  fromPartial<I extends Exact<DeepPartial<Foo>, I>>(object: I): Foo {
+    const message = createBaseFoo();
+    message.name = object.name ?? "";
+    message.bar = (object.bar !== undefined && object.bar !== null) ? Bar.fromPartial(object.bar) : undefined;
     return message;
   },
 };
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
-type DeepPartial<T> = T extends Builtin
-  ? T
-  : T extends Array<infer U>
-  ? Array<DeepPartial<U>>
-  : T extends ReadonlyArray<infer U>
-  ? ReadonlyArray<DeepPartial<U>>
-  : T extends {}
-  ? { [K in keyof T]?: DeepPartial<T[K]> }
+
+type DeepPartial<T> = T extends Builtin ? T
+  : T extends Array<infer U> ? Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
 
-// If you get a compile-error about 'Constructor<Long> and ... have no overlap',
-// add '--ts_proto_opt=esModuleInterop=true' as a flag when calling 'protoc'.
-if (util.Long !== Long) {
-  util.Long = Long as any;
-  configure();
+type KeysOfUnion<T> = T extends T ? keyof T : never;
+type Exact<P, I extends P> = P extends Builtin ? P
+  : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
+
+function isSet(value: any): boolean {
+  return value !== null && value !== undefined;
 }

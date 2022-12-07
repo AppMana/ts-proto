@@ -1,5 +1,6 @@
 /* eslint-disable */
-export const protobufPackage = 'google.protobuf';
+
+export const protobufPackage = "google.protobuf";
 
 /**
  * A Timestamp represents a point in time independent of any time zone or local
@@ -52,8 +53,15 @@ export const protobufPackage = 'google.protobuf';
  *     Timestamp timestamp = Timestamp.newBuilder().setSeconds(millis / 1000)
  *         .setNanos((int) ((millis % 1000) * 1000000)).build();
  *
+ * Example 5: Compute Timestamp from Java `Instant.now()`.
  *
- * Example 5: Compute Timestamp from current time in Python.
+ *     Instant now = Instant.now();
+ *
+ *     Timestamp timestamp =
+ *         Timestamp.newBuilder().setSeconds(now.getEpochSecond())
+ *             .setNanos(now.getNano()).build();
+ *
+ * Example 6: Compute Timestamp from current time in Python.
  *
  *     timestamp = Timestamp()
  *     timestamp.GetCurrentTime()

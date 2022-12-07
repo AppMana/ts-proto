@@ -1,22 +1,28 @@
-import { MethodDescriptorProto, FileDescriptorProto, ServiceDescriptorProto } from 'ts-proto-descriptors';
-import { Code, code, imp, joinCode } from 'ts-poet';
+import { MethodDescriptorProto, FileDescriptorProto, ServiceDescriptorProto } from "ts-proto-descriptors";
+import { Code, code, def, imp, joinCode } from "ts-poet";
 import {
   BatchMethod,
   detectBatchMethod,
   requestType,
-  responseObservable,
-  responsePromise,
+  rawRequestType,
+  responsePromiseOrObservable,
   responseType,
-} from './types';
-import { assertInstanceOf, FormattedMethodDescriptor, maybeAddComment, maybePrefixPackage, singular } from './utils';
-import SourceInfo, { Fields } from './sourceInfo';
-import { camelCase } from './case';
-import { contextTypeVar } from './main';
-import { Context } from './context';
+  observableType,
+} from "./types";
+import {
+  assertInstanceOf,
+  FormattedMethodDescriptor,
+  impFile,
+  maybeAddComment,
+  maybePrefixPackage,
+  singular,
+} from "./utils";
+import SourceInfo, { Fields } from "./sourceInfo";
+import { contextTypeVar } from "./main";
+import { Context } from "./context";
 
-const hash = imp('hash*object-hash');
-const dataloader = imp('DataLoader*dataloader');
-const Reader = imp('Reader@protobufjs/minimal');
+const hash = imp("hash*object-hash");
+const dataloader = imp("DataLoader*dataloader");
 
 /**
  * Generates an interface for `serviceDesc`.
@@ -34,12 +40,12 @@ export function generateService(
   sourceInfo: SourceInfo,
   serviceDesc: ServiceDescriptorProto
 ): Code {
-  const { options, utils } = ctx;
+  const { options } = ctx;
   const chunks: Code[] = [];
 
   maybeAddComment(sourceInfo, chunks, serviceDesc.options?.deprecated);
-  const maybeTypeVar = options.context ? `<${contextTypeVar}>` : '';
-  chunks.push(code`export interface ${serviceDesc.name}${maybeTypeVar} {`);
+  const maybeTypeVar = options.context ? `<${contextTypeVar}>` : "";
+  chunks.push(code`export interface ${def(serviceDesc.name)}${maybeTypeVar} {`);
 
   serviceDesc.method.forEach((methodDesc, index) => {
     assertInstanceOf(methodDesc, FormattedMethodDescriptor);
@@ -51,41 +57,34 @@ export function generateService(
       params.push(code`ctx: Context`);
     }
 
-    let inputType = requestType(ctx, methodDesc);
     // the grpc-web clients auto-`fromPartial` the input before handing off to grpc-web's
     // serde runtime, so it's okay to accept partial results from the client
-    if (options.outputClientImpl === 'grpc-web') {
-      inputType = code`${utils.DeepPartial}<${inputType}>`;
-    }
+    const partialInput = options.outputClientImpl === "grpc-web";
+    const inputType = requestType(ctx, methodDesc, partialInput);
     params.push(code`request: ${inputType}`);
 
     // Use metadata as last argument for interface only configuration
-    if (options.outputClientImpl === 'grpc-web') {
+    if (options.outputClientImpl === "grpc-web") {
       // We have to use grpc.Metadata where grpc will come from @improbable-eng
       params.push(code`metadata?: grpc.Metadata`);
     } else if (options.addGrpcMetadata) {
-      const Metadata = imp('Metadata@@grpc/grpc-js');
-      const q = options.addNestjsRestParameter ? '' : '?';
+      const Metadata = imp("Metadata@@grpc/grpc-js");
+      const q = options.addNestjsRestParameter ? "" : "?";
       params.push(code`metadata${q}: ${Metadata}`);
+    } else if (options.metadataType) {
+      const Metadata = imp(options.metadataType);
+      params.push(code`metadata?: ${Metadata}`);
     }
     if (options.addNestjsRestParameter) {
       params.push(code`...rest: any`);
     }
 
-    // Return observable for interface only configuration, passing returnObservable=true and methodDesc.serverStreaming=true
-    let returnType: Code;
-    let hasDefinition = true;
-    if (options.returnObservable || methodDesc.serverStreaming) {
-      returnType = responseObservable(ctx, methodDesc);
-    } else {
-      returnType = responsePromise(ctx, methodDesc);
-    }
-    if (methodDesc.clientStreaming && !ctx.options.nestJs) {
-      hasDefinition = false;
-    }
-    if (hasDefinition) {
-      chunks.push(code`${methodDesc.formattedName}(${joinCode(params, { on: ',' })}): ${returnType};`);
-    }
+    chunks.push(
+      code`${methodDesc.formattedName}(${joinCode(params, { on: "," })}): ${responsePromiseOrObservable(
+        ctx,
+        methodDesc
+      )};`
+    );
 
     // If this is a batch method, auto-generate the singular version of it
     if (options.context) {
@@ -101,7 +100,7 @@ export function generateService(
 
   chunks.push(code`}`);
 
-  return joinCode(chunks, { on: '\n' });
+  return joinCode(chunks, { on: "\n" });
 }
 
 function generateRegularRpcMethod(
@@ -111,26 +110,65 @@ function generateRegularRpcMethod(
   methodDesc: MethodDescriptorProto
 ): Code {
   assertInstanceOf(methodDesc, FormattedMethodDescriptor);
-  const { options } = ctx;
-  const Reader = imp('Reader@protobufjs/minimal');
+  const { options, utils } = ctx;
+  const Reader = impFile(ctx.options, "Reader@protobufjs/minimal");
+  const rawInputType = rawRequestType(ctx, methodDesc, { keepValueType: true });
   const inputType = requestType(ctx, methodDesc);
   const outputType = responseType(ctx, methodDesc);
+  const rawOutputType = responseType(ctx, methodDesc, { keepValueType: true });
 
   const params = [...(options.context ? [code`ctx: Context`] : []), code`request: ${inputType}`];
-  const maybeCtx = options.context ? 'ctx,' : '';
+  const maybeCtx = options.context ? "ctx," : "";
+
+  let encode = code`${rawInputType}.encode(request).finish()`;
+  let decode = code`data => ${rawOutputType}.decode(new ${Reader}(data))`;
+
+  // if (options.useDate && rawOutputType.toString().includes("Timestamp")) {
+  //   decode = code`data => ${utils.fromTimestamp}(${rawOutputType}.decode(new ${Reader}(data)))`;
+  // }
+  if (methodDesc.clientStreaming) {
+    if (options.useAsyncIterable) {
+      encode = code`${rawInputType}.encodeTransform(request)`;
+    } else {
+      encode = code`request.pipe(${imp("map@rxjs/operators")}(request => ${encode}))`;
+    }
+  }
+  let returnVariable: string;
+  if (options.returnObservable || methodDesc.serverStreaming) {
+    returnVariable = "result";
+    if (options.useAsyncIterable) {
+      decode = code`${rawOutputType}.decodeTransform(result)`;
+    } else {
+      decode = code`result.pipe(${imp("map@rxjs/operators")}(${decode}))`;
+    }
+  } else {
+    returnVariable = "promise";
+    decode = code`promise.then(${decode})`;
+  }
+
+  let rpcMethod: string;
+  if (methodDesc.clientStreaming && methodDesc.serverStreaming) {
+    rpcMethod = "bidirectionalStreamingRequest";
+  } else if (methodDesc.serverStreaming) {
+    rpcMethod = "serverStreamingRequest";
+  } else if (methodDesc.clientStreaming) {
+    rpcMethod = "clientStreamingRequest";
+  } else {
+    rpcMethod = "request";
+  }
 
   return code`
     ${methodDesc.formattedName}(
-      ${joinCode(params, { on: ',' })}
-    ): ${responsePromise(ctx, methodDesc)} {
-      const data = ${inputType}.encode(request).finish();
-      const promise = this.rpc.request(
+      ${joinCode(params, { on: "," })}
+    ): ${responsePromiseOrObservable(ctx, methodDesc)} {
+      const data = ${encode};
+      const ${returnVariable} = this.rpc.${rpcMethod}(
         ${maybeCtx}
-        "${maybePrefixPackage(fileDesc, serviceDesc.name)}",
+        this.service,
         "${methodDesc.name}",
         data
       );
-      return promise.then(data => ${outputType}.decode(new ${Reader}(data)));
+      return ${decode};
     }
   `;
 }
@@ -146,18 +184,18 @@ export function generateServiceClientImpl(
   // Define the FooServiceImpl class
   const { name } = serviceDesc;
   const i = options.context ? `${name}<Context>` : name;
-  const t = options.context ? `<${contextTypeVar}>` : '';
-  chunks.push(code`export class ${name}ClientImpl${t} implements ${i} {`);
+  const t = options.context ? `<${contextTypeVar}>` : "";
+  chunks.push(code`export class ${name}ClientImpl${t} implements ${def(i)} {`);
 
   // Create the constructor(rpc: Rpc)
-  const rpcType = options.context ? 'Rpc<Context>' : 'Rpc';
+  const rpcType = options.context ? "Rpc<Context>" : "Rpc";
   chunks.push(code`private readonly rpc: ${rpcType};`);
-  chunks.push(code`constructor(rpc: ${rpcType}) {`);
+  chunks.push(code`private readonly service: string;`);
+  chunks.push(code`constructor(rpc: ${rpcType}, opts?: {service?: string}) {`);
+  const serviceID = maybePrefixPackage(fileDesc, serviceDesc.name);
+  chunks.push(code`this.service = opts?.service || "${serviceID}";`);
   chunks.push(code`this.rpc = rpc;`);
 
-  const supportedServiceMethods = serviceDesc.method.filter((methodDesc) =>
-    methodDesc.clientStreaming && !options.nestJs ? false : true
-  );
   // Bind each FooService method to the FooServiceImpl class
   for (const methodDesc of serviceDesc.method) {
     assertInstanceOf(methodDesc, FormattedMethodDescriptor);
@@ -187,7 +225,7 @@ export function generateServiceClientImpl(
 }
 
 /** We've found a BatchXxx method, create a synthetic GetXxx method that calls it. */
-function generateBatchingRpcMethod(ctx: Context, batchMethod: BatchMethod): Code {
+function generateBatchingRpcMethod(_ctx: Context, batchMethod: BatchMethod): Code {
   const {
     methodDesc,
     singleMethodName,
@@ -248,6 +286,7 @@ function generateCachingRpcMethod(
   const inputType = requestType(ctx, methodDesc);
   const outputType = responseType(ctx, methodDesc);
   const uniqueIdentifier = `${maybePrefixPackage(fileDesc, serviceDesc.name)}.${methodDesc.name}`;
+  const Reader = impFile(ctx.options, "Reader@protobufjs/minimal");
   const lambda = code`
     (requests) => {
       const responses = requests.map(async request => {
@@ -282,24 +321,41 @@ function generateCachingRpcMethod(
  *
  * This lets clients pass in their own request-promise-ish client.
  *
+ * This also requires clientStreamingRequest, serverStreamingRequest and
+ * bidirectionalStreamingRequest methods if any of the RPCs is streaming.
+ *
  * We don't export this because if a project uses multiple `*.proto` files,
  * we don't want our the barrel imports in `index.ts` to have multiple `Rpc`
  * types.
  */
-export function generateRpcType(ctx: Context): Code {
+export function generateRpcType(ctx: Context, hasStreamingMethods: boolean): Code {
   const { options } = ctx;
-  const maybeContext = options.context ? '<Context>' : '';
-  const maybeContextParam = options.context ? 'ctx: Context,' : '';
-  return code`
-    interface Rpc${maybeContext} {
-      request(
+  const maybeContext = options.context ? "<Context>" : "";
+  const maybeContextParam = options.context ? "ctx: Context," : "";
+  const methods = [[code`request`, code`Uint8Array`, code`Promise<Uint8Array>`]];
+  if (hasStreamingMethods) {
+    const observable = observableType(ctx);
+    methods.push([code`clientStreamingRequest`, code`${observable}<Uint8Array>`, code`Promise<Uint8Array>`]);
+    methods.push([code`serverStreamingRequest`, code`Uint8Array`, code`${observable}<Uint8Array>`]);
+    methods.push([
+      code`bidirectionalStreamingRequest`,
+      code`${observable}<Uint8Array>`,
+      code`${observable}<Uint8Array>`,
+    ]);
+  }
+  const chunks: Code[] = [];
+  chunks.push(code`    interface Rpc${maybeContext} {`);
+  methods.forEach((method) => {
+    chunks.push(code`
+      ${method[0]}(
         ${maybeContextParam}
         service: string,
         method: string,
-        data: Uint8Array
-      ): Promise<Uint8Array>;
-    }
-  `;
+        data: ${method[1]}
+      ): ${method[2]};`);
+  });
+  chunks.push(code`    }`);
+  return joinCode(chunks, { on: "\n" });
 }
 
 export function generateDataLoadersType(): Code {
