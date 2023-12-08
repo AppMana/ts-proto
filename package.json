@@ -51,7 +51,7 @@
     "jest-ts-webcompat-resolver": "^1.0.0",
     "mongodb": "^4.3.0",
     "nice-grpc": "^1.1.1",
-    "prettier": "^2.7.1",
+    "prettier": "^3.1.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.4.0",
     "semantic-release": "^19.0.3",
