@@ -41,19 +41,24 @@ export const WithEmtpy = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): WithEmtpy {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseWithEmtpy();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 10) {
+            break;
+          }
+
           message.empty = Empty.decode(reader, reader.uint32());
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
@@ -64,10 +69,15 @@ export const WithEmtpy = {
 
   toJSON(message: WithEmtpy): unknown {
     const obj: any = {};
-    message.empty !== undefined && (obj.empty = message.empty ? Empty.toJSON(message.empty) : undefined);
+    if (message.empty !== undefined) {
+      obj.empty = Empty.toJSON(message.empty);
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<WithEmtpy>, I>>(base?: I): WithEmtpy {
+    return WithEmtpy.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<WithEmtpy>, I>>(object: I): WithEmtpy {
     const message = createBaseWithEmtpy();
     message.empty = (object.empty !== undefined && object.empty !== null) ? Empty.fromPartial(object.empty) : undefined;
@@ -88,19 +98,24 @@ export const WithStruct = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): WithStruct {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseWithStruct();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 10) {
+            break;
+          }
+
           message.strut = Struct.unwrap(Struct.decode(reader, reader.uint32()));
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
@@ -111,10 +126,15 @@ export const WithStruct = {
 
   toJSON(message: WithStruct): unknown {
     const obj: any = {};
-    message.strut !== undefined && (obj.strut = message.strut);
+    if (message.strut !== undefined) {
+      obj.strut = message.strut;
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<WithStruct>, I>>(base?: I): WithStruct {
+    return WithStruct.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<WithStruct>, I>>(object: I): WithStruct {
     const message = createBaseWithStruct();
     message.strut = object.strut ?? undefined;
@@ -135,19 +155,24 @@ export const WithTimestamp = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): WithTimestamp {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseWithTimestamp();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 10) {
+            break;
+          }
+
           message.timestamp = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
@@ -158,10 +183,15 @@ export const WithTimestamp = {
 
   toJSON(message: WithTimestamp): unknown {
     const obj: any = {};
-    message.timestamp !== undefined && (obj.timestamp = message.timestamp.toISOString());
+    if (message.timestamp !== undefined) {
+      obj.timestamp = message.timestamp.toISOString();
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<WithTimestamp>, I>>(base?: I): WithTimestamp {
+    return WithTimestamp.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<WithTimestamp>, I>>(object: I): WithTimestamp {
     const message = createBaseWithTimestamp();
     message.timestamp = object.timestamp ?? undefined;
@@ -194,31 +224,52 @@ export const WithAll = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): WithAll {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseWithAll();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 10) {
+            break;
+          }
+
           message.empty = Empty.decode(reader, reader.uint32());
-          break;
+          continue;
         case 2:
+          if (tag !== 18) {
+            break;
+          }
+
           message.strut = Struct.unwrap(Struct.decode(reader, reader.uint32()));
-          break;
+          continue;
         case 3:
+          if (tag !== 26) {
+            break;
+          }
+
           message.timestamp = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
-          break;
+          continue;
         case 4:
+          if (tag !== 34) {
+            break;
+          }
+
           message.duration = Duration.decode(reader, reader.uint32());
-          break;
+          continue;
         case 5:
+          if (tag !== 42) {
+            break;
+          }
+
           message.veryVerySecret = VeryVerySecret.decode(reader, reader.uint32());
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
@@ -235,15 +286,27 @@ export const WithAll = {
 
   toJSON(message: WithAll): unknown {
     const obj: any = {};
-    message.empty !== undefined && (obj.empty = message.empty ? Empty.toJSON(message.empty) : undefined);
-    message.strut !== undefined && (obj.strut = message.strut);
-    message.timestamp !== undefined && (obj.timestamp = message.timestamp.toISOString());
-    message.duration !== undefined && (obj.duration = message.duration ? Duration.toJSON(message.duration) : undefined);
-    message.veryVerySecret !== undefined &&
-      (obj.veryVerySecret = message.veryVerySecret ? VeryVerySecret.toJSON(message.veryVerySecret) : undefined);
+    if (message.empty !== undefined) {
+      obj.empty = Empty.toJSON(message.empty);
+    }
+    if (message.strut !== undefined) {
+      obj.strut = message.strut;
+    }
+    if (message.timestamp !== undefined) {
+      obj.timestamp = message.timestamp.toISOString();
+    }
+    if (message.duration !== undefined) {
+      obj.duration = Duration.toJSON(message.duration);
+    }
+    if (message.veryVerySecret !== undefined) {
+      obj.veryVerySecret = VeryVerySecret.toJSON(message.veryVerySecret);
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<WithAll>, I>>(base?: I): WithAll {
+    return WithAll.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<WithAll>, I>>(object: I): WithAll {
     const message = createBaseWithAll();
     message.empty = (object.empty !== undefined && object.empty !== null) ? Empty.fromPartial(object.empty) : undefined;
@@ -262,7 +325,8 @@ export const WithAll = {
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
 export type DeepPartial<T> = T extends Builtin ? T
-  : T extends Array<infer U> ? Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
+  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
   : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
 
@@ -277,16 +341,16 @@ function toTimestamp(date: Date): Timestamp {
 }
 
 function fromTimestamp(t: Timestamp): Date {
-  let millis = t.seconds * 1_000;
-  millis += t.nanos / 1_000_000;
-  return new Date(millis);
+  let millis = (t.seconds || 0) * 1_000;
+  millis += (t.nanos || 0) / 1_000_000;
+  return new globalThis.Date(millis);
 }
 
 function fromJsonTimestamp(o: any): Date {
-  if (o instanceof Date) {
+  if (o instanceof globalThis.Date) {
     return o;
   } else if (typeof o === "string") {
-    return new Date(o);
+    return new globalThis.Date(o);
   } else {
     return fromTimestamp(Timestamp.fromJSON(o));
   }

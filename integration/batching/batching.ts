@@ -57,37 +57,43 @@ export const BatchQueryRequest = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): BatchQueryRequest {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseBatchQueryRequest();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 10) {
+            break;
+          }
+
           message.ids.push(reader.string());
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): BatchQueryRequest {
-    return { ids: Array.isArray(object?.ids) ? object.ids.map((e: any) => String(e)) : [] };
+    return { ids: globalThis.Array.isArray(object?.ids) ? object.ids.map((e: any) => globalThis.String(e)) : [] };
   },
 
   toJSON(message: BatchQueryRequest): unknown {
     const obj: any = {};
-    if (message.ids) {
-      obj.ids = message.ids.map((e) => e);
-    } else {
-      obj.ids = [];
+    if (message.ids?.length) {
+      obj.ids = message.ids;
     }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<BatchQueryRequest>, I>>(base?: I): BatchQueryRequest {
+    return BatchQueryRequest.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<BatchQueryRequest>, I>>(object: I): BatchQueryRequest {
     const message = createBaseBatchQueryRequest();
     message.ids = object.ids?.map((e) => e) || [];
@@ -108,37 +114,45 @@ export const BatchQueryResponse = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): BatchQueryResponse {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseBatchQueryResponse();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 10) {
+            break;
+          }
+
           message.entities.push(Entity.decode(reader, reader.uint32()));
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): BatchQueryResponse {
-    return { entities: Array.isArray(object?.entities) ? object.entities.map((e: any) => Entity.fromJSON(e)) : [] };
+    return {
+      entities: globalThis.Array.isArray(object?.entities) ? object.entities.map((e: any) => Entity.fromJSON(e)) : [],
+    };
   },
 
   toJSON(message: BatchQueryResponse): unknown {
     const obj: any = {};
-    if (message.entities) {
-      obj.entities = message.entities.map((e) => e ? Entity.toJSON(e) : undefined);
-    } else {
-      obj.entities = [];
+    if (message.entities?.length) {
+      obj.entities = message.entities.map((e) => Entity.toJSON(e));
     }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<BatchQueryResponse>, I>>(base?: I): BatchQueryResponse {
+    return BatchQueryResponse.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<BatchQueryResponse>, I>>(object: I): BatchQueryResponse {
     const message = createBaseBatchQueryResponse();
     message.entities = object.entities?.map((e) => Entity.fromPartial(e)) || [];
@@ -159,37 +173,43 @@ export const BatchMapQueryRequest = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): BatchMapQueryRequest {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseBatchMapQueryRequest();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 10) {
+            break;
+          }
+
           message.ids.push(reader.string());
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): BatchMapQueryRequest {
-    return { ids: Array.isArray(object?.ids) ? object.ids.map((e: any) => String(e)) : [] };
+    return { ids: globalThis.Array.isArray(object?.ids) ? object.ids.map((e: any) => globalThis.String(e)) : [] };
   },
 
   toJSON(message: BatchMapQueryRequest): unknown {
     const obj: any = {};
-    if (message.ids) {
-      obj.ids = message.ids.map((e) => e);
-    } else {
-      obj.ids = [];
+    if (message.ids?.length) {
+      obj.ids = message.ids;
     }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<BatchMapQueryRequest>, I>>(base?: I): BatchMapQueryRequest {
+    return BatchMapQueryRequest.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<BatchMapQueryRequest>, I>>(object: I): BatchMapQueryRequest {
     const message = createBaseBatchMapQueryRequest();
     message.ids = object.ids?.map((e) => e) || [];
@@ -210,22 +230,27 @@ export const BatchMapQueryResponse = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): BatchMapQueryResponse {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseBatchMapQueryResponse();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 10) {
+            break;
+          }
+
           const entry1 = BatchMapQueryResponse_EntitiesEntry.decode(reader, reader.uint32());
           if (entry1.value !== undefined) {
             message.entities[entry1.key] = entry1.value;
           }
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
@@ -243,15 +268,21 @@ export const BatchMapQueryResponse = {
 
   toJSON(message: BatchMapQueryResponse): unknown {
     const obj: any = {};
-    obj.entities = {};
     if (message.entities) {
-      Object.entries(message.entities).forEach(([k, v]) => {
-        obj.entities[k] = Entity.toJSON(v);
-      });
+      const entries = Object.entries(message.entities);
+      if (entries.length > 0) {
+        obj.entities = {};
+        entries.forEach(([k, v]) => {
+          obj.entities[k] = Entity.toJSON(v);
+        });
+      }
     }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<BatchMapQueryResponse>, I>>(base?: I): BatchMapQueryResponse {
+    return BatchMapQueryResponse.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<BatchMapQueryResponse>, I>>(object: I): BatchMapQueryResponse {
     const message = createBaseBatchMapQueryResponse();
     message.entities = Object.entries(object.entities ?? {}).reduce<{ [key: string]: Entity }>((acc, [key, value]) => {
@@ -280,40 +311,58 @@ export const BatchMapQueryResponse_EntitiesEntry = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): BatchMapQueryResponse_EntitiesEntry {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseBatchMapQueryResponse_EntitiesEntry();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 10) {
+            break;
+          }
+
           message.key = reader.string();
-          break;
+          continue;
         case 2:
+          if (tag !== 18) {
+            break;
+          }
+
           message.value = Entity.decode(reader, reader.uint32());
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): BatchMapQueryResponse_EntitiesEntry {
     return {
-      key: isSet(object.key) ? String(object.key) : "",
+      key: isSet(object.key) ? globalThis.String(object.key) : "",
       value: isSet(object.value) ? Entity.fromJSON(object.value) : undefined,
     };
   },
 
   toJSON(message: BatchMapQueryResponse_EntitiesEntry): unknown {
     const obj: any = {};
-    message.key !== undefined && (obj.key = message.key);
-    message.value !== undefined && (obj.value = message.value ? Entity.toJSON(message.value) : undefined);
+    if (message.key !== "") {
+      obj.key = message.key;
+    }
+    if (message.value !== undefined) {
+      obj.value = Entity.toJSON(message.value);
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<BatchMapQueryResponse_EntitiesEntry>, I>>(
+    base?: I,
+  ): BatchMapQueryResponse_EntitiesEntry {
+    return BatchMapQueryResponse_EntitiesEntry.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<BatchMapQueryResponse_EntitiesEntry>, I>>(
     object: I,
   ): BatchMapQueryResponse_EntitiesEntry {
@@ -339,33 +388,43 @@ export const GetOnlyMethodRequest = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): GetOnlyMethodRequest {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseGetOnlyMethodRequest();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 10) {
+            break;
+          }
+
           message.id = reader.string();
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): GetOnlyMethodRequest {
-    return { id: isSet(object.id) ? String(object.id) : "" };
+    return { id: isSet(object.id) ? globalThis.String(object.id) : "" };
   },
 
   toJSON(message: GetOnlyMethodRequest): unknown {
     const obj: any = {};
-    message.id !== undefined && (obj.id = message.id);
+    if (message.id !== "") {
+      obj.id = message.id;
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<GetOnlyMethodRequest>, I>>(base?: I): GetOnlyMethodRequest {
+    return GetOnlyMethodRequest.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<GetOnlyMethodRequest>, I>>(object: I): GetOnlyMethodRequest {
     const message = createBaseGetOnlyMethodRequest();
     message.id = object.id ?? "";
@@ -386,19 +445,24 @@ export const GetOnlyMethodResponse = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): GetOnlyMethodResponse {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseGetOnlyMethodResponse();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 10) {
+            break;
+          }
+
           message.entity = Entity.decode(reader, reader.uint32());
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
@@ -409,10 +473,15 @@ export const GetOnlyMethodResponse = {
 
   toJSON(message: GetOnlyMethodResponse): unknown {
     const obj: any = {};
-    message.entity !== undefined && (obj.entity = message.entity ? Entity.toJSON(message.entity) : undefined);
+    if (message.entity !== undefined) {
+      obj.entity = Entity.toJSON(message.entity);
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<GetOnlyMethodResponse>, I>>(base?: I): GetOnlyMethodResponse {
+    return GetOnlyMethodResponse.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<GetOnlyMethodResponse>, I>>(object: I): GetOnlyMethodResponse {
     const message = createBaseGetOnlyMethodResponse();
     message.entity = (object.entity !== undefined && object.entity !== null)
@@ -435,33 +504,43 @@ export const WriteMethodRequest = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): WriteMethodRequest {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseWriteMethodRequest();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 10) {
+            break;
+          }
+
           message.id = reader.string();
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): WriteMethodRequest {
-    return { id: isSet(object.id) ? String(object.id) : "" };
+    return { id: isSet(object.id) ? globalThis.String(object.id) : "" };
   },
 
   toJSON(message: WriteMethodRequest): unknown {
     const obj: any = {};
-    message.id !== undefined && (obj.id = message.id);
+    if (message.id !== "") {
+      obj.id = message.id;
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<WriteMethodRequest>, I>>(base?: I): WriteMethodRequest {
+    return WriteMethodRequest.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<WriteMethodRequest>, I>>(object: I): WriteMethodRequest {
     const message = createBaseWriteMethodRequest();
     message.id = object.id ?? "";
@@ -479,16 +558,17 @@ export const WriteMethodResponse = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): WriteMethodResponse {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseWriteMethodResponse();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
-        default:
-          reader.skipType(tag & 7);
-          break;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
@@ -502,6 +582,9 @@ export const WriteMethodResponse = {
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<WriteMethodResponse>, I>>(base?: I): WriteMethodResponse {
+    return WriteMethodResponse.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<WriteMethodResponse>, I>>(_: I): WriteMethodResponse {
     const message = createBaseWriteMethodResponse();
     return message;
@@ -524,37 +607,56 @@ export const Entity = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): Entity {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseEntity();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 10) {
+            break;
+          }
+
           message.id = reader.string();
-          break;
+          continue;
         case 2:
+          if (tag !== 18) {
+            break;
+          }
+
           message.name = reader.string();
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): Entity {
-    return { id: isSet(object.id) ? String(object.id) : "", name: isSet(object.name) ? String(object.name) : "" };
+    return {
+      id: isSet(object.id) ? globalThis.String(object.id) : "",
+      name: isSet(object.name) ? globalThis.String(object.name) : "",
+    };
   },
 
   toJSON(message: Entity): unknown {
     const obj: any = {};
-    message.id !== undefined && (obj.id = message.id);
-    message.name !== undefined && (obj.name = message.name);
+    if (message.id !== "") {
+      obj.id = message.id;
+    }
+    if (message.name !== "") {
+      obj.name = message.name;
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<Entity>, I>>(base?: I): Entity {
+    return Entity.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<Entity>, I>>(object: I): Entity {
     const message = createBaseEntity();
     message.id = object.id ?? "";
@@ -572,11 +674,12 @@ export interface EntityService {
   WriteMethod(request: WriteMethodRequest): Promise<WriteMethodResponse>;
 }
 
+export const EntityServiceServiceName = "batching.EntityService";
 export class EntityServiceClientImpl implements EntityService {
   private readonly rpc: Rpc;
   private readonly service: string;
   constructor(rpc: Rpc, opts?: { service?: string }) {
-    this.service = opts?.service || "batching.EntityService";
+    this.service = opts?.service || EntityServiceServiceName;
     this.rpc = rpc;
     this.BatchQuery = this.BatchQuery.bind(this);
     this.BatchMapQuery = this.BatchMapQuery.bind(this);
@@ -586,25 +689,25 @@ export class EntityServiceClientImpl implements EntityService {
   BatchQuery(request: BatchQueryRequest): Promise<BatchQueryResponse> {
     const data = BatchQueryRequest.encode(request).finish();
     const promise = this.rpc.request(this.service, "BatchQuery", data);
-    return promise.then((data) => BatchQueryResponse.decode(new _m0.Reader(data)));
+    return promise.then((data) => BatchQueryResponse.decode(_m0.Reader.create(data)));
   }
 
   BatchMapQuery(request: BatchMapQueryRequest): Promise<BatchMapQueryResponse> {
     const data = BatchMapQueryRequest.encode(request).finish();
     const promise = this.rpc.request(this.service, "BatchMapQuery", data);
-    return promise.then((data) => BatchMapQueryResponse.decode(new _m0.Reader(data)));
+    return promise.then((data) => BatchMapQueryResponse.decode(_m0.Reader.create(data)));
   }
 
   GetOnlyMethod(request: GetOnlyMethodRequest): Promise<GetOnlyMethodResponse> {
     const data = GetOnlyMethodRequest.encode(request).finish();
     const promise = this.rpc.request(this.service, "GetOnlyMethod", data);
-    return promise.then((data) => GetOnlyMethodResponse.decode(new _m0.Reader(data)));
+    return promise.then((data) => GetOnlyMethodResponse.decode(_m0.Reader.create(data)));
   }
 
   WriteMethod(request: WriteMethodRequest): Promise<WriteMethodResponse> {
     const data = WriteMethodRequest.encode(request).finish();
     const promise = this.rpc.request(this.service, "WriteMethod", data);
-    return promise.then((data) => WriteMethodResponse.decode(new _m0.Reader(data)));
+    return promise.then((data) => WriteMethodResponse.decode(_m0.Reader.create(data)));
   }
 }
 
@@ -615,7 +718,8 @@ interface Rpc {
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
 export type DeepPartial<T> = T extends Builtin ? T
-  : T extends Array<infer U> ? Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
+  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
   : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
 

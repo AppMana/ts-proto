@@ -16,13 +16,11 @@ import {
   maybeAddComment,
   maybePrefixPackage,
   singular,
+  tryCatchBlock,
 } from "./utils";
 import SourceInfo, { Fields } from "./sourceInfo";
 import { contextTypeVar } from "./main";
 import { Context } from "./context";
-
-const hash = imp("hash*object-hash");
-const dataloader = imp("DataLoader*dataloader");
 
 /**
  * Generates an interface for `serviceDesc`.
@@ -38,7 +36,7 @@ export function generateService(
   ctx: Context,
   fileDesc: FileDescriptorProto,
   sourceInfo: SourceInfo,
-  serviceDesc: ServiceDescriptorProto
+  serviceDesc: ServiceDescriptorProto,
 ): Code {
   const { options } = ctx;
   const chunks: Code[] = [];
@@ -75,6 +73,9 @@ export function generateService(
       const Metadata = imp(options.metadataType);
       params.push(code`metadata?: ${Metadata}`);
     }
+    if (options.useAbortSignal) {
+      params.push(code`abortSignal?: AbortSignal`);
+    }
     if (options.addNestjsRestParameter) {
       params.push(code`...rest: any`);
     }
@@ -82,8 +83,8 @@ export function generateService(
     chunks.push(
       code`${methodDesc.formattedName}(${joinCode(params, { on: "," })}): ${responsePromiseOrObservable(
         ctx,
-        methodDesc
-      )};`
+        methodDesc,
+      )};`,
     );
 
     // If this is a batch method, auto-generate the singular version of it
@@ -103,28 +104,53 @@ export function generateService(
   return joinCode(chunks, { on: "\n" });
 }
 
-function generateRegularRpcMethod(
-  ctx: Context,
-  fileDesc: FileDescriptorProto,
-  serviceDesc: ServiceDescriptorProto,
-  methodDesc: MethodDescriptorProto
-): Code {
+function generateRegularRpcMethod(ctx: Context, methodDesc: MethodDescriptorProto): Code {
   assertInstanceOf(methodDesc, FormattedMethodDescriptor);
-  const { options, utils } = ctx;
+  const { options } = ctx;
   const Reader = impFile(ctx.options, "Reader@protobufjs/minimal");
   const rawInputType = rawRequestType(ctx, methodDesc, { keepValueType: true });
   const inputType = requestType(ctx, methodDesc);
-  const outputType = responseType(ctx, methodDesc);
   const rawOutputType = responseType(ctx, methodDesc, { keepValueType: true });
 
-  const params = [...(options.context ? [code`ctx: Context`] : []), code`request: ${inputType}`];
+  const params = [
+    ...(options.context ? [code`ctx: Context`] : []),
+    code`request: ${inputType}`,
+    ...(options.useAbortSignal ? [code`abortSignal?: AbortSignal`] : []),
+  ];
   const maybeCtx = options.context ? "ctx," : "";
+  const maybeAbortSignal = options.useAbortSignal ? "abortSignal || undefined," : "";
+
+  let errorHandler;
+  if (options.rpcErrorHandler) {
+    errorHandler = code`
+      if (error instanceof Error && this.rpc.handleError) {
+        return Promise.reject(this.rpc.handleError(this.service, "${methodDesc.name}", error));
+      }
+      return Promise.reject(error);
+    `;
+  }
 
   let encode = code`${rawInputType}.encode(request).finish()`;
-  let decode = code`data => ${rawOutputType}.decode(new ${Reader}(data))`;
+  let beforeRequest;
+  if (options.rpcBeforeRequest) {
+    beforeRequest = code`
+    if (this.rpc.beforeRequest) {
+      this.rpc.beforeRequest(this.service, "${methodDesc.name}", request);
+    }`;
+  }
+  let decode = code`${rawOutputType}.decode(${Reader}.create(data))`;
+  if (options.rpcAfterResponse) {
+    decode = code`
+      const response = ${rawOutputType}.decode(${Reader}.create(data));
+      if (this.rpc.afterResponse) {
+        this.rpc.afterResponse(this.service, "${methodDesc.name}", response);
+      }
+      return response;
+    `;
+  }
 
   // if (options.useDate && rawOutputType.toString().includes("Timestamp")) {
-  //   decode = code`data => ${utils.fromTimestamp}(${rawOutputType}.decode(new ${Reader}(data)))`;
+  //   decode = code`data => ${utils.fromTimestamp}(${rawOutputType}.decode(${Reader}.create(data)))`;
   // }
   if (methodDesc.clientStreaming) {
     if (options.useAsyncIterable) {
@@ -133,17 +159,14 @@ function generateRegularRpcMethod(
       encode = code`request.pipe(${imp("map@rxjs/operators")}(request => ${encode}))`;
     }
   }
+
+  const returnStatement = createDefaultServiceReturn(ctx, methodDesc, decode, errorHandler);
+
   let returnVariable: string;
   if (options.returnObservable || methodDesc.serverStreaming) {
     returnVariable = "result";
-    if (options.useAsyncIterable) {
-      decode = code`${rawOutputType}.decodeTransform(result)`;
-    } else {
-      decode = code`result.pipe(${imp("map@rxjs/operators")}(${decode}))`;
-    }
   } else {
     returnVariable = "promise";
-    decode = code`promise.then(${decode})`;
   }
 
   let rpcMethod: string;
@@ -161,28 +184,67 @@ function generateRegularRpcMethod(
     ${methodDesc.formattedName}(
       ${joinCode(params, { on: "," })}
     ): ${responsePromiseOrObservable(ctx, methodDesc)} {
-      const data = ${encode};
+      const data = ${encode}; ${beforeRequest ? beforeRequest : ""}
       const ${returnVariable} = this.rpc.${rpcMethod}(
         ${maybeCtx}
         this.service,
         "${methodDesc.name}",
-        data
+        data,
+        ${maybeAbortSignal}
       );
-      return ${decode};
+      return ${returnStatement};
     }
   `;
+}
+
+function createDefaultServiceReturn(
+  ctx: Context,
+  methodDesc: MethodDescriptorProto,
+  decode: Code,
+  errorHandler?: Code,
+): Code {
+  const { options } = ctx;
+  const rawOutputType = responseType(ctx, methodDesc, { keepValueType: true });
+  if (options.returnObservable || methodDesc.serverStreaming) {
+    if (options.useAsyncIterable) {
+      return code`${rawOutputType}.decodeTransform(result)`;
+    } else {
+      return code`result.pipe(${imp("map@rxjs/operators")}(data => ${decode}))`;
+    }
+  }
+
+  if (errorHandler) {
+    let tryBlock = decode;
+    if (!options.rpcAfterResponse) {
+      tryBlock = code`return ${decode}`;
+    }
+    return code`promise.then(data => { ${tryCatchBlock(
+      tryBlock,
+      code`return Promise.reject(error);`,
+    )}}).catch((error) => { ${errorHandler} })`;
+  } else if (options.rpcAfterResponse) {
+    return code`promise.then(data => { ${decode} } )`;
+  }
+  return code`promise.then(data => ${decode})`;
 }
 
 export function generateServiceClientImpl(
   ctx: Context,
   fileDesc: FileDescriptorProto,
-  serviceDesc: ServiceDescriptorProto
+  serviceDesc: ServiceDescriptorProto,
 ): Code {
   const { options } = ctx;
   const chunks: Code[] = [];
 
-  // Define the FooServiceImpl class
+  // Determine information about the service.
   const { name } = serviceDesc;
+  const serviceName = maybePrefixPackage(fileDesc, serviceDesc.name);
+
+  // Define the service name constant.
+  const serviceNameConst = `${name}ServiceName`;
+  chunks.push(code`export const ${serviceNameConst} = "${serviceName}";`);
+
+  // Define the FooServiceImpl class
   const i = options.context ? `${name}<Context>` : name;
   const t = options.context ? `<${contextTypeVar}>` : "";
   chunks.push(code`export class ${name}ClientImpl${t} implements ${def(i)} {`);
@@ -192,8 +254,7 @@ export function generateServiceClientImpl(
   chunks.push(code`private readonly rpc: ${rpcType};`);
   chunks.push(code`private readonly service: string;`);
   chunks.push(code`constructor(rpc: ${rpcType}, opts?: {service?: string}) {`);
-  const serviceID = maybePrefixPackage(fileDesc, serviceDesc.name);
-  chunks.push(code`this.service = opts?.service || "${serviceID}";`);
+  chunks.push(code`this.service = opts?.service || ${serviceNameConst};`);
   chunks.push(code`this.rpc = rpc;`);
 
   // Bind each FooService method to the FooServiceImpl class
@@ -216,7 +277,7 @@ export function generateServiceClientImpl(
     if (options.context && methodDesc.name.match(/^Get[A-Z]/)) {
       chunks.push(generateCachingRpcMethod(ctx, fileDesc, serviceDesc, methodDesc));
     } else {
-      chunks.push(generateRegularRpcMethod(ctx, fileDesc, serviceDesc, methodDesc));
+      chunks.push(generateRegularRpcMethod(ctx, methodDesc));
     }
   }
 
@@ -225,7 +286,7 @@ export function generateServiceClientImpl(
 }
 
 /** We've found a BatchXxx method, create a synthetic GetXxx method that calls it. */
-function generateBatchingRpcMethod(_ctx: Context, batchMethod: BatchMethod): Code {
+function generateBatchingRpcMethod(ctx: Context, batchMethod: BatchMethod): Code {
   const {
     methodDesc,
     singleMethodName,
@@ -238,6 +299,11 @@ function generateBatchingRpcMethod(_ctx: Context, batchMethod: BatchMethod): Cod
   } = batchMethod;
   assertInstanceOf(methodDesc, FormattedMethodDescriptor);
 
+  const { options } = ctx;
+
+  const hash = options.esModuleInterop ? imp("hash=object-hash") : imp("hash*object-hash");
+  const dataloader = options.esModuleInterop ? imp("DataLoader=dataloader") : imp("DataLoader*dataloader");
+
   // Create the `(keys) => ...` lambda we'll pass to the DataLoader constructor
   const lambda: Code[] = [];
   lambda.push(code`
@@ -247,14 +313,14 @@ function generateBatchingRpcMethod(_ctx: Context, batchMethod: BatchMethod): Cod
   if (mapType) {
     // If the return type is a map, lookup each key in the result
     lambda.push(code`
-      return this.${methodDesc.formattedName}(ctx, request).then(res => {
-        return ${inputFieldName}.map(key => res.${outputFieldName}[key])
+      return this.${methodDesc.formattedName}(ctx, request as any).then(res => {
+        return ${inputFieldName}.map(key => res.${outputFieldName}[key] ?? ${ctx.utils.fail}())
       });
     `);
   } else {
     // Otherwise assume they come back in order
     lambda.push(code`
-      return this.${methodDesc.formattedName}(ctx, request).then(res => res.${outputFieldName})
+      return this.${methodDesc.formattedName}(ctx, request as any).then(res => res.${outputFieldName})
     `);
   }
   lambda.push(code`}`);
@@ -265,7 +331,7 @@ function generateBatchingRpcMethod(_ctx: Context, batchMethod: BatchMethod): Cod
       ${singular(inputFieldName)}: ${inputType}
     ): Promise<${outputType}> {
       const dl = ctx.getDataLoader("${uniqueIdentifier}", () => {
-        return new ${dataloader}<${inputType}, ${outputType}>(
+        return new ${dataloader}<${inputType}, ${outputType}, string>(
           ${joinCode(lambda)},
           { cacheKeyFn: ${hash}, ...ctx.rpcDataLoaderOptions }
         );
@@ -280,9 +346,15 @@ function generateCachingRpcMethod(
   ctx: Context,
   fileDesc: FileDescriptorProto,
   serviceDesc: ServiceDescriptorProto,
-  methodDesc: MethodDescriptorProto
+  methodDesc: MethodDescriptorProto,
 ): Code {
   assertInstanceOf(methodDesc, FormattedMethodDescriptor);
+
+  const { options } = ctx;
+
+  const hash = options.esModuleInterop ? imp("hash=object-hash") : imp("hash*object-hash");
+  const dataloader = options.esModuleInterop ? imp("DataLoader=dataloader") : imp("DataLoader*dataloader");
+
   const inputType = requestType(ctx, methodDesc);
   const outputType = responseType(ctx, methodDesc);
   const uniqueIdentifier = `${maybePrefixPackage(fileDesc, serviceDesc.name)}.${methodDesc.name}`;
@@ -294,7 +366,7 @@ function generateCachingRpcMethod(
         const response = await this.rpc.request(ctx, "${maybePrefixPackage(fileDesc, serviceDesc.name)}", "${
     methodDesc.name
   }", data);
-        return ${outputType}.decode(new ${Reader}(response));
+        return ${outputType}.decode(${Reader}.create(response));
       });
       return Promise.all(responses);
     }
@@ -306,7 +378,7 @@ function generateCachingRpcMethod(
       request: ${inputType},
     ): Promise<${outputType}> {
       const dl = ctx.getDataLoader("${uniqueIdentifier}", () => {
-        return new ${dataloader}<${inputType}, ${outputType}>(
+        return new ${dataloader}<${inputType}, ${outputType}, string>(
           ${lambda},
           { cacheKeyFn: ${hash}, ...ctx.rpcDataLoaderOptions },
         );
@@ -332,9 +404,25 @@ export function generateRpcType(ctx: Context, hasStreamingMethods: boolean): Cod
   const { options } = ctx;
   const maybeContext = options.context ? "<Context>" : "";
   const maybeContextParam = options.context ? "ctx: Context," : "";
+  const maybeAbortSignalParam = options.useAbortSignal ? "abortSignal?: AbortSignal," : "";
   const methods = [[code`request`, code`Uint8Array`, code`Promise<Uint8Array>`]];
+  const additionalMethods = [];
+  if (options.rpcBeforeRequest) {
+    additionalMethods.push(
+      code`beforeRequest?<T extends { [k in keyof T]: unknown }>(service: string, method: string, request: T): void;`,
+    );
+  }
+  if (options.rpcAfterResponse) {
+    additionalMethods.push(
+      code`afterResponse?<T extends { [k in keyof T]: unknown }>(service: string, method: string, response: T): void;`,
+    );
+  }
+  if (options.rpcErrorHandler) {
+    additionalMethods.push(code`handleError?(service: string, method: string, error: Error): Error;`);
+  }
+
   if (hasStreamingMethods) {
-    const observable = observableType(ctx);
+    const observable = observableType(ctx, true);
     methods.push([code`clientStreamingRequest`, code`${observable}<Uint8Array>`, code`Promise<Uint8Array>`]);
     methods.push([code`serverStreamingRequest`, code`Uint8Array`, code`${observable}<Uint8Array>`]);
     methods.push([
@@ -351,9 +439,11 @@ export function generateRpcType(ctx: Context, hasStreamingMethods: boolean): Cod
         ${maybeContextParam}
         service: string,
         method: string,
-        data: ${method[1]}
+        data: ${method[1]},
+        ${maybeAbortSignalParam}
       ): ${method[2]};`);
   });
+  additionalMethods.forEach((method) => chunks.push(method));
   chunks.push(code`    }`);
   return joinCode(chunks, { on: "\n" });
 }

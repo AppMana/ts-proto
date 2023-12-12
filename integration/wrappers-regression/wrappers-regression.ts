@@ -15,11 +15,12 @@ export interface Clock {
   NowBool(request: Empty): Promise<BoolValue>;
 }
 
+export const ClockServiceName = "Clock";
 export class ClockClientImpl implements Clock {
   private readonly rpc: Rpc;
   private readonly service: string;
   constructor(rpc: Rpc, opts?: { service?: string }) {
-    this.service = opts?.service || "Clock";
+    this.service = opts?.service || ClockServiceName;
     this.rpc = rpc;
     this.Now = this.Now.bind(this);
     this.NowString = this.NowString.bind(this);
@@ -29,25 +30,25 @@ export class ClockClientImpl implements Clock {
   Now(request: Empty): Promise<Timestamp> {
     const data = Empty.encode(request).finish();
     const promise = this.rpc.request(this.service, "Now", data);
-    return promise.then((data) => Timestamp.decode(new _m0.Reader(data)));
+    return promise.then((data) => Timestamp.decode(_m0.Reader.create(data)));
   }
 
   NowString(request: StringValue): Promise<StringValue> {
     const data = StringValue.encode(request).finish();
     const promise = this.rpc.request(this.service, "NowString", data);
-    return promise.then((data) => StringValue.decode(new _m0.Reader(data)));
+    return promise.then((data) => StringValue.decode(_m0.Reader.create(data)));
   }
 
   NowStringStream(request: Observable<StringValue>): Observable<StringValue> {
     const data = request.pipe(map((request) => StringValue.encode(request).finish()));
     const result = this.rpc.bidirectionalStreamingRequest(this.service, "NowStringStream", data);
-    return result.pipe(map((data) => StringValue.decode(new _m0.Reader(data))));
+    return result.pipe(map((data) => StringValue.decode(_m0.Reader.create(data))));
   }
 
   NowBool(request: Empty): Promise<BoolValue> {
     const data = Empty.encode(request).finish();
     const promise = this.rpc.request(this.service, "NowBool", data);
-    return promise.then((data) => BoolValue.decode(new _m0.Reader(data)));
+    return promise.then((data) => BoolValue.decode(_m0.Reader.create(data)));
   }
 }
 

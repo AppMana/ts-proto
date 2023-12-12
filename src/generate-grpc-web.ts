@@ -13,7 +13,7 @@ const BrowserHeaders = imp("BrowserHeaders@browser-headers");
 export function generateGrpcClientImpl(
   ctx: Context,
   _fileDesc: FileDescriptorProto,
-  serviceDesc: ServiceDescriptorProto
+  serviceDesc: ServiceDescriptorProto,
 ): Code {
   const chunks: Code[] = [];
 
@@ -53,6 +53,8 @@ export function generateGrpcClientImpl(
 /** Creates the RPC methods that client code actually calls. */
 function generateRpcMethod(ctx: Context, serviceDesc: ServiceDescriptorProto, methodDesc: MethodDescriptorProto) {
   assertInstanceOf(methodDesc, FormattedMethodDescriptor);
+  const { options } = ctx;
+  const { useAbortSignal } = options;
   const requestMessage = rawRequestType(ctx, methodDesc);
   const inputType = requestType(ctx, methodDesc, true);
   const returns = responsePromiseOrObservable(ctx, methodDesc);
@@ -62,6 +64,7 @@ function generateRpcMethod(ctx: Context, serviceDesc: ServiceDescriptorProto, me
     ${methodDesc.formattedName}(
       request: ${inputType},
       metadata?: grpc.Metadata,
+      ${useAbortSignal ? "abortSignal?: AbortSignal," : ""}
     ): ${returns} {
       throw new Error('ts-proto does not yet support client streaming!');
     }
@@ -73,11 +76,13 @@ function generateRpcMethod(ctx: Context, serviceDesc: ServiceDescriptorProto, me
     ${methodDesc.formattedName}(
       request: ${inputType},
       metadata?: grpc.Metadata,
+      ${useAbortSignal ? "abortSignal?: AbortSignal," : ""}
     ): ${returns} {
       return this.rpc.${method}(
         ${methodDescName(serviceDesc, methodDesc)},
         ${requestMessage}.fromPartial(request),
         metadata,
+        ${useAbortSignal ? "abortSignal," : ""}
       );
     }
   `;
@@ -102,7 +107,7 @@ export function generateGrpcServiceDesc(fileDesc: FileDescriptorProto, serviceDe
 export function generateGrpcMethodDesc(
   ctx: Context,
   serviceDesc: ServiceDescriptorProto,
-  methodDesc: MethodDescriptorProto
+  methodDesc: MethodDescriptorProto,
 ): Code {
   const inputType = requestType(ctx, methodDesc);
   const outputType = responseType(ctx, methodDesc);
@@ -130,7 +135,11 @@ export function generateGrpcMethodDesc(
   // we want/what grpc-web's runtime needs.
   const responseFn = code`{
     deserializeBinary(data: Uint8Array) {
-      return { ...${outputType}.decode(data), toObject() { return this; } };
+      const value = ${outputType}.decode(data);
+      return {
+        ...value,
+        toObject() { return value; },
+      };
     }
   }`;
 
@@ -166,6 +175,8 @@ export function addGrpcWebMisc(ctx: Context, hasStreamingMethods: boolean): Code
 /** Makes an `Rpc` interface to decouple from the low-level grpc-web `grpc.invoke and grpc.unary`/etc. methods. */
 function generateGrpcWebRpcType(ctx: Context, returnObservable: boolean, hasStreamingMethods: boolean): Code {
   const chunks: Code[] = [];
+  const { options } = ctx;
+  const { useAbortSignal } = options;
 
   chunks.push(code`interface Rpc {`);
 
@@ -175,6 +186,7 @@ function generateGrpcWebRpcType(ctx: Context, returnObservable: boolean, hasStre
       methodDesc: T,
       request: any,
       metadata: grpc.Metadata | undefined,
+      ${useAbortSignal ? "abortSignal?: AbortSignal," : ""}
     ): ${wrapper}<any>;
   `);
 
@@ -184,6 +196,7 @@ function generateGrpcWebRpcType(ctx: Context, returnObservable: boolean, hasStre
         methodDesc: T,
         request: any,
         metadata: grpc.Metadata | undefined,
+        ${useAbortSignal ? "abortSignal?: AbortSignal," : ""}
       ): ${observableType(ctx)}<any>;
     `);
   }
@@ -231,57 +244,80 @@ function generateGrpcWebImpl(ctx: Context, returnObservable: boolean, hasStreami
 }
 
 function createPromiseUnaryMethod(ctx: Context): Code {
+  const { options } = ctx;
+  const { useAbortSignal } = options;
+
+  const maybeAbortSignal = useAbortSignal
+    ? `
+      if (abortSignal) abortSignal.addEventListener("abort", () => {
+        client.close();
+        reject(abortSignal.reason);
+      });`
+    : "";
+
   return code`
     unary<T extends UnaryMethodDefinitionish>(
       methodDesc: T,
       _request: any,
-      metadata: grpc.Metadata | undefined
+      metadata: grpc.Metadata | undefined,
+      ${useAbortSignal ? "abortSignal?: AbortSignal," : ""}
     ): Promise<any> {
       const request = { ..._request, ...methodDesc.requestType };
-      const maybeCombinedMetadata =
-        metadata && this.options.metadata
-          ? new ${BrowserHeaders}({ ...this.options?.metadata.headersMap, ...metadata?.headersMap })
-          : metadata || this.options.metadata;
+      const maybeCombinedMetadata = metadata && this.options.metadata
+        ? new ${BrowserHeaders}({ ...this.options?.metadata.headersMap, ...metadata?.headersMap })
+        : metadata ?? this.options.metadata;
       return new Promise((resolve, reject) => {
-      ${grpc}.unary(methodDesc, {
+        ${useAbortSignal ? `const client =` : ""} ${grpc}.unary(methodDesc, {
           request,
           host: this.host,
-          metadata: maybeCombinedMetadata,
-          transport: this.options.transport,
-          debug: this.options.debug,
+          metadata: maybeCombinedMetadata ?? {},
+          ...(this.options.transport !== undefined ? {transport: this.options.transport} : {}),
+          debug: this.options.debug ?? false,
           onEnd: function (response) {
             if (response.status === grpc.Code.OK) {
-              resolve(response.message);
+              resolve(response.message!.toObject());
             } else {
               const err = new ${ctx.utils.GrpcWebError}(response.statusMessage, response.status, response.trailers);
               reject(err);
             }
           },
         });
+
+        ${maybeAbortSignal}
       });
     }
   `;
 }
 
 function createObservableUnaryMethod(ctx: Context): Code {
+  const { options } = ctx;
+  const { useAbortSignal } = options;
+
+  const maybeAbortSignal = useAbortSignal
+    ? `
+      if (abortSignal) abortSignal.addEventListener("abort", () => {
+        observer.error(abortSignal.reason);
+        client.close();
+      });`
+    : "";
   return code`
     unary<T extends UnaryMethodDefinitionish>(
       methodDesc: T,
       _request: any,
-      metadata: grpc.Metadata | undefined
+      metadata: grpc.Metadata | undefined,
+      ${useAbortSignal ? "abortSignal?: AbortSignal," : ""}
     ): ${observableType(ctx)}<any> {
       const request = { ..._request, ...methodDesc.requestType };
-      const maybeCombinedMetadata =
-        metadata && this.options.metadata
-          ? new ${BrowserHeaders}({ ...this.options?.metadata.headersMap, ...metadata?.headersMap })
-          : metadata || this.options.metadata;
+      const maybeCombinedMetadata = metadata && this.options.metadata
+        ? new ${BrowserHeaders}({ ...this.options?.metadata.headersMap, ...metadata?.headersMap })
+        : metadata ?? this.options.metadata;
       return new Observable(observer => {
-        ${grpc}.unary(methodDesc, {
+        ${useAbortSignal ? `const client =` : ""} ${grpc}.unary(methodDesc, {
           request,
           host: this.host,
-          metadata: maybeCombinedMetadata,
-          transport: this.options.transport,
-          debug: this.options.debug,
+          metadata: maybeCombinedMetadata ?? {},
+          ...(this.options.transport !== undefined ? {transport: this.options.transport} : {}),
+          debug: this.options.debug ?? false,
           onEnd: (next) => {
             if (next.status !== 0) {
               const err = new ${ctx.utils.GrpcWebError}(next.statusMessage, next.status, next.trailers);
@@ -292,33 +328,41 @@ function createObservableUnaryMethod(ctx: Context): Code {
             }
           },
         });
+
+
+      ${maybeAbortSignal}
+
       }).pipe(${take}(1));
     }
   `;
 }
 
 function createInvokeMethod(ctx: Context) {
+  const { options } = ctx;
+  const { useAbortSignal } = options;
+
   return code`
     invoke<T extends UnaryMethodDefinitionish>(
       methodDesc: T,
       _request: any,
-      metadata: grpc.Metadata | undefined
+      metadata: grpc.Metadata | undefined,
+      ${useAbortSignal ? "abortSignal?: AbortSignal," : ""}
     ): ${observableType(ctx)}<any> {
-      const upStreamCodes = this.options.upStreamRetryCodes || [];
+      const upStreamCodes = this.options.upStreamRetryCodes ?? [];
       const DEFAULT_TIMEOUT_TIME: number = 3_000;
       const request = { ..._request, ...methodDesc.requestType };
-      const maybeCombinedMetadata =
-      metadata && this.options.metadata
+      const transport = this.options.streamingTransport ?? this.options.transport;
+      const maybeCombinedMetadata = metadata && this.options.metadata
         ? new ${BrowserHeaders}({ ...this.options?.metadata.headersMap, ...metadata?.headersMap })
-        : metadata || this.options.metadata;
+        : metadata ?? this.options.metadata;
       return new Observable(observer => {
         const upStream = (() => {
           const client = ${grpc}.invoke(methodDesc, {
             host: this.host,
             request,
-            transport: this.options.streamingTransport || this.options.transport,
-            metadata: maybeCombinedMetadata,
-            debug: this.options.debug,
+            ...(transport !== undefined ? {transport} : {}),
+            metadata: maybeCombinedMetadata ?? {},
+            debug: this.options.debug ?? false,
             onMessage: (next) => observer.next(next),
             onEnd: (code: ${grpc}.Code, message: string, trailers: ${grpc}.Metadata) => {
               if (code === 0) {
@@ -333,7 +377,29 @@ function createInvokeMethod(ctx: Context) {
               }
             },
           });
-          observer.add(() => client.close());
+          ${
+            useAbortSignal
+              ? `
+          if (abortSignal) {
+            const abort = () => {
+              observer.error(abortSignal.reason);
+              client.close();
+            };
+            abortSignal.addEventListener("abort", abort);
+            observer.add(() => {
+              if (abortSignal.aborted) {
+                return;
+              }
+
+              abortSignal.removeEventListener('abort', abort); 
+              client.close();
+            });
+          } else {
+            observer.add(() => client.close());
+          }
+          `
+              : `observer.add(() => client.close());`
+          }
         });
         upStream();
       }).pipe(${share}());

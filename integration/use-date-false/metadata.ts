@@ -21,19 +21,24 @@ export const Metadata = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): Metadata {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMetadata();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 10) {
+            break;
+          }
+
           message.lastEdited = Timestamp.decode(reader, reader.uint32());
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
@@ -44,10 +49,15 @@ export const Metadata = {
 
   toJSON(message: Metadata): unknown {
     const obj: any = {};
-    message.lastEdited !== undefined && (obj.lastEdited = fromTimestamp(message.lastEdited).toISOString());
+    if (message.lastEdited !== undefined) {
+      obj.lastEdited = fromTimestamp(message.lastEdited).toISOString();
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<Metadata>, I>>(base?: I): Metadata {
+    return Metadata.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<Metadata>, I>>(object: I): Metadata {
     const message = createBaseMetadata();
     message.lastEdited = (object.lastEdited !== undefined && object.lastEdited !== null)
@@ -60,7 +70,8 @@ export const Metadata = {
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
 export type DeepPartial<T> = T extends Builtin ? T
-  : T extends Array<infer U> ? Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
+  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
   : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
 
@@ -75,16 +86,16 @@ function toTimestamp(date: Date): Timestamp {
 }
 
 function fromTimestamp(t: Timestamp): Date {
-  let millis = t.seconds * 1_000;
-  millis += t.nanos / 1_000_000;
-  return new Date(millis);
+  let millis = (t.seconds || 0) * 1_000;
+  millis += (t.nanos || 0) / 1_000_000;
+  return new globalThis.Date(millis);
 }
 
 function fromJsonTimestamp(o: any): Timestamp {
-  if (o instanceof Date) {
+  if (o instanceof globalThis.Date) {
     return toTimestamp(o);
   } else if (typeof o === "string") {
-    return toTimestamp(new Date(o));
+    return toTimestamp(new globalThis.Date(o));
   } else {
     return Timestamp.fromJSON(o);
   }

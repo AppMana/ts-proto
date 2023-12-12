@@ -43,43 +43,66 @@ export const Todo = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): Todo {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseTodo();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 10) {
+            break;
+          }
+
           message.id = reader.string();
-          break;
+          continue;
         case 2:
+          if (tag !== 18) {
+            break;
+          }
+
           message.oid = fromProtoObjectId(ObjectId.decode(reader, reader.uint32()));
-          break;
+          continue;
         case 3:
+          if (tag !== 26) {
+            break;
+          }
+
           message.repeatedOid.push(fromProtoObjectId(ObjectId.decode(reader, reader.uint32())));
-          break;
+          continue;
         case 4:
+          if (tag !== 34) {
+            break;
+          }
+
           message.optionalOid = fromProtoObjectId(ObjectId.decode(reader, reader.uint32()));
-          break;
+          continue;
         case 5:
+          if (tag !== 42) {
+            break;
+          }
+
           const entry5 = Todo_MapOfOidsEntry.decode(reader, reader.uint32());
           if (entry5.value !== undefined) {
             message.mapOfOids[entry5.key] = entry5.value;
           }
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): Todo {
     return {
-      id: isSet(object.id) ? String(object.id) : "",
+      id: isSet(object.id) ? globalThis.String(object.id) : "",
       oid: isSet(object.oid) ? fromJsonObjectId(object.oid) : undefined,
-      repeatedOid: Array.isArray(object?.repeatedOid) ? object.repeatedOid.map((e: any) => fromJsonObjectId(e)) : [],
+      repeatedOid: globalThis.Array.isArray(object?.repeatedOid)
+        ? object.repeatedOid.map((e: any) => fromJsonObjectId(e))
+        : [],
       optionalOid: isSet(object.optionalOid) ? fromJsonObjectId(object.optionalOid) : undefined,
       mapOfOids: isObject(object.mapOfOids)
         ? Object.entries(object.mapOfOids).reduce<{ [key: string]: mongodb.ObjectId }>((acc, [key, value]) => {
@@ -92,23 +115,33 @@ export const Todo = {
 
   toJSON(message: Todo): unknown {
     const obj: any = {};
-    message.id !== undefined && (obj.id = message.id);
-    message.oid !== undefined && (obj.oid = message.oid.toString());
-    if (message.repeatedOid) {
-      obj.repeatedOid = message.repeatedOid.map((e) => e.toString());
-    } else {
-      obj.repeatedOid = [];
+    if (message.id !== "") {
+      obj.id = message.id;
     }
-    message.optionalOid !== undefined && (obj.optionalOid = message.optionalOid.toString());
-    obj.mapOfOids = {};
+    if (message.oid !== undefined) {
+      obj.oid = message.oid.toString();
+    }
+    if (message.repeatedOid?.length) {
+      obj.repeatedOid = message.repeatedOid.map((e) => e.toString());
+    }
+    if (message.optionalOid !== undefined) {
+      obj.optionalOid = message.optionalOid.toString();
+    }
     if (message.mapOfOids) {
-      Object.entries(message.mapOfOids).forEach(([k, v]) => {
-        obj.mapOfOids[k] = v.toString();
-      });
+      const entries = Object.entries(message.mapOfOids);
+      if (entries.length > 0) {
+        obj.mapOfOids = {};
+        entries.forEach(([k, v]) => {
+          obj.mapOfOids[k] = v.toString();
+        });
+      }
     }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<Todo>, I>>(base?: I): Todo {
+    return Todo.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<Todo>, I>>(object: I): Todo {
     const message = createBaseTodo();
     message.id = object.id ?? "";
@@ -146,40 +179,56 @@ export const Todo_MapOfOidsEntry = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): Todo_MapOfOidsEntry {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseTodo_MapOfOidsEntry();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 10) {
+            break;
+          }
+
           message.key = reader.string();
-          break;
+          continue;
         case 2:
+          if (tag !== 18) {
+            break;
+          }
+
           message.value = fromProtoObjectId(ObjectId.decode(reader, reader.uint32()));
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): Todo_MapOfOidsEntry {
     return {
-      key: isSet(object.key) ? String(object.key) : "",
+      key: isSet(object.key) ? globalThis.String(object.key) : "",
       value: isSet(object.value) ? fromJsonObjectId(object.value) : undefined,
     };
   },
 
   toJSON(message: Todo_MapOfOidsEntry): unknown {
     const obj: any = {};
-    message.key !== undefined && (obj.key = message.key);
-    message.value !== undefined && (obj.value = message.value.toString());
+    if (message.key !== "") {
+      obj.key = message.key;
+    }
+    if (message.value !== undefined) {
+      obj.value = message.value.toString();
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<Todo_MapOfOidsEntry>, I>>(base?: I): Todo_MapOfOidsEntry {
+    return Todo_MapOfOidsEntry.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<Todo_MapOfOidsEntry>, I>>(object: I): Todo_MapOfOidsEntry {
     const message = createBaseTodo_MapOfOidsEntry();
     message.key = object.key ?? "";
@@ -193,7 +242,8 @@ export const Todo_MapOfOidsEntry = {
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
 export type DeepPartial<T> = T extends Builtin ? T
-  : T extends Array<infer U> ? Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
+  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
   : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
 

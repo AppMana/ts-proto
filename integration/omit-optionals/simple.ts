@@ -24,40 +24,56 @@ export const TestMessage = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): TestMessage {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseTestMessage();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 8) {
+            break;
+          }
+
           message.field1 = reader.bool();
-          break;
+          continue;
         case 2:
+          if (tag !== 16) {
+            break;
+          }
+
           message.field2 = reader.bool();
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): TestMessage {
     return {
-      field1: isSet(object.field1) ? Boolean(object.field1) : false,
-      field2: isSet(object.field2) ? Boolean(object.field2) : undefined,
+      field1: isSet(object.field1) ? globalThis.Boolean(object.field1) : false,
+      field2: isSet(object.field2) ? globalThis.Boolean(object.field2) : undefined,
     };
   },
 
   toJSON(message: TestMessage): unknown {
     const obj: any = {};
-    message.field1 !== undefined && (obj.field1 = message.field1);
-    message.field2 !== undefined && (obj.field2 = message.field2);
+    if (message.field1 === true) {
+      obj.field1 = message.field1;
+    }
+    if (message.field2 !== undefined) {
+      obj.field2 = message.field2;
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<TestMessage>, I>>(base?: I): TestMessage {
+    return TestMessage.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<TestMessage>, I>>(object: I): TestMessage {
     const message = createBaseTestMessage();
     message.field1 = object.field1 ?? false;
@@ -69,7 +85,8 @@ export const TestMessage = {
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
 export type DeepPartial<T> = T extends Builtin ? T
-  : T extends Array<infer U> ? Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
+  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
   : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
 

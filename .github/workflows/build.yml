@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14.x, 16.x, 18.x]
+        node-version: [16.x, 18.x, 20.x]
 
     steps:
       - uses: actions/checkout@v3
@@ -26,9 +26,9 @@ jobs:
         run: yarn install
       - name: Prepare Integration
         run: ./integration/pbjs.sh
-      # This will fail if any git-tracked file has changed
       - name: Codegen
         run: yarn bin2ts
+      # This will fail if any git-tracked file has changed
       - name: Diff Output
         run: git status && git diff --exit-code
       - name: test
@@ -56,7 +56,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v1
         with:
-          node-version: 16.x
+          node-version: 18.x
       - name: Install
         run: yarn install
       - name: Build
@@ -69,29 +69,3 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     outputs:
       release_version: ${{ steps.release.outputs.release_version }}
-
-  push_to_buf_registry:
-    if: ${{ needs.release.outputs.release_version != '' }}
-    name: Push Docker image to Buf Registry
-    runs-on: ubuntu-latest
-    environment: npm
-    needs: [release]
-    steps:
-      - name: Check out the repo
-        uses: actions/checkout@v3
-
-      - name: Log in to Buf Plugin Registry
-        uses: docker/login-action@v2
-        with:
-          registry: plugins.buf.build
-          username: ${{ secrets.BUF_USERNAME }}
-          password: ${{ secrets.BUF_PASSWORD }}
-
-      - name: Build Plugin image
-        run: docker build
-          --file ts-proto.Dockerfile
-          --tag plugins.buf.build/${{ secrets.BUF_USERNAME }}/ts-proto:v${{ needs.release.outputs.release_version }}-0
-          "."
-
-      - name: Push to Buf Registry
-        run: docker push plugins.buf.build/${{ secrets.BUF_USERNAME }}/ts-proto:v${{ needs.release.outputs.release_version }}-0

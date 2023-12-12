@@ -6,12 +6,18 @@ export enum LongOption {
   NUMBER = "number",
   LONG = "long",
   STRING = "string",
+  BIGINT = "bigint",
 }
 
 export enum DateOption {
   DATE = "date",
   STRING = "string",
   TIMESTAMP = "timestamp",
+}
+
+export enum JsonTimestampOption {
+  RFC3339 = "rfc3339",
+  RAW = "raw",
 }
 
 export enum EnvOption {
@@ -37,19 +43,24 @@ export type Options = {
   context: boolean;
   snakeToCamel: Array<"json" | "keys">;
   forceLong: LongOption;
+  globalThisPolyfill: boolean;
   useOptionals: boolean | "none" | "messages" | "all"; // boolean is deprecated
+  emitDefaultValues: Array<"json-methods">;
   useDate: DateOption;
+  useJsonTimestamp: JsonTimestampOption;
   useMongoObjectId: boolean;
   oneof: OneofOption;
   esModuleInterop: boolean;
   fileSuffix: string;
   importSuffix: string;
-  outputEncodeMethods: boolean;
-  outputJsonMethods: boolean;
+  outputEncodeMethods: true | false | "encode-only" | "decode-only" | "encode-no-creation";
+  outputJsonMethods: true | false | "to-only" | "from-only";
   outputPartialMethods: boolean;
+  outputTypeAnnotations: boolean | "static-only";
   outputTypeRegistry: boolean;
   stringEnums: boolean;
   constEnums: boolean;
+  removeEnumPrefix: boolean;
   enumsAsLiterals: boolean;
   outputClientImpl: boolean | "grpc-web";
   outputServices: ServiceOption[];
@@ -61,30 +72,42 @@ export type Options = {
   nestJs: boolean;
   env: EnvOption;
   unrecognizedEnum: boolean;
+  unrecognizedEnumName: string;
+  unrecognizedEnumValue: number;
   exportCommonSymbols: boolean;
   outputSchema: boolean;
   onlyTypes: boolean;
   emitImportedFiles: boolean;
+  useAbortSignal: boolean;
   useExactTypes: boolean;
   useAsyncIterable: boolean;
   unknownFields: boolean;
   usePrototypeForDefaults: boolean;
+  useJsonName: boolean;
   useJsonWireFormat: boolean;
   useNumericEnumForJson: boolean;
   initializeFieldsAsUndefined: boolean;
   useMapType: boolean;
   useReadonlyTypes: boolean;
   useSnakeTypeName: boolean;
+  outputExtensions: boolean;
+  outputIndex: boolean;
   M: { [from: string]: string };
+  rpcBeforeRequest: boolean;
+  rpcAfterResponse: boolean;
+  rpcErrorHandler: boolean;
 };
 
 export function defaultOptions(): Options {
   return {
     context: false,
     snakeToCamel: ["json", "keys"],
+    emitDefaultValues: [],
+    globalThisPolyfill: false,
     forceLong: LongOption.NUMBER,
     useOptionals: "none",
     useDate: DateOption.DATE,
+    useJsonTimestamp: JsonTimestampOption.RFC3339,
     useMongoObjectId: false,
     oneof: OneofOption.PROPERTIES,
     esModuleInterop: false,
@@ -94,9 +117,11 @@ export function defaultOptions(): Options {
     outputEncodeMethods: true,
     outputJsonMethods: true,
     outputPartialMethods: true,
+    outputTypeAnnotations: false,
     outputTypeRegistry: false,
     stringEnums: false,
     constEnums: false,
+    removeEnumPrefix: false,
     enumsAsLiterals: false,
     outputClientImpl: true,
     outputServices: [],
@@ -107,21 +132,30 @@ export function defaultOptions(): Options {
     nestJs: false,
     env: EnvOption.BOTH,
     unrecognizedEnum: true,
+    unrecognizedEnumName: "UNRECOGNIZED",
+    unrecognizedEnumValue: -1,
     exportCommonSymbols: true,
     outputSchema: false,
     onlyTypes: false,
     emitImportedFiles: true,
     useExactTypes: true,
+    useAbortSignal: false,
     useAsyncIterable: false,
     unknownFields: false,
     usePrototypeForDefaults: false,
+    useJsonName: false,
     useJsonWireFormat: false,
     useNumericEnumForJson: false,
     initializeFieldsAsUndefined: true,
     useMapType: false,
     useReadonlyTypes: false,
     useSnakeTypeName: true,
+    outputExtensions: false,
+    outputIndex: false,
     M: {},
+    rpcBeforeRequest: false,
+    rpcAfterResponse: false,
+    rpcErrorHandler: false,
   };
 }
 
@@ -194,6 +228,12 @@ export function optionsFromParameter(parameter: string | undefined): Options {
     options.snakeToCamel = (options.snakeToCamel as string).split("_") as any;
   }
 
+  if ((options.emitDefaultValues as any) === "json-methods") {
+    options.emitDefaultValues = ["json-methods"];
+  } else {
+    options.emitDefaultValues = [];
+  }
+
   if (options.useJsonWireFormat) {
     if (!options.onlyTypes) {
       // useJsonWireFormat requires onlyTypes=true
@@ -207,6 +247,23 @@ export function optionsFromParameter(parameter: string | undefined): Options {
 
   if (options.nestJs) {
     options.initializeFieldsAsUndefined = false;
+  }
+
+  if (options.outputIndex) {
+    options.exportCommonSymbols = false;
+  }
+
+  if (options.rpcBeforeRequest || options.rpcAfterResponse || options.rpcErrorHandler) {
+    const includesGeneric = options.outputServices.includes(ServiceOption.GENERIC);
+    options.outputServices = [ServiceOption.DEFAULT];
+    if (includesGeneric) {
+      options.outputServices.push(ServiceOption.GENERIC);
+    }
+  }
+
+  if (options.unrecognizedEnumValue) {
+    // Make sure to cast number options to an actual number
+    options.unrecognizedEnumValue = Number(options.unrecognizedEnumValue);
   }
 
   return options;
@@ -246,11 +303,20 @@ function parseParamValue(value: string): string | boolean {
   return value === "true" ? true : value === "false" ? false : value;
 }
 
-export function getTsPoetOpts(_options: Options): ToStringOpts {
-  const imports = ["protobufjs/minimal" + _options.importSuffix];
+export function getTsPoetOpts(options: Options): ToStringOpts {
+  const { importSuffix, esModuleInterop } = options;
+  const pbjs = "protobufjs/minimal" + importSuffix;
   return {
     prefix: `/* eslint-disable */`,
     dprintOptions: { preferSingleLine: true, lineWidth: 120 },
-    ...(_options.esModuleInterop ? { forceDefaultImport: imports } : { forceModuleImport: imports }),
+    forceRequireImport: esModuleInterop ? [] : ["long"],
+    forceDefaultImport: esModuleInterop ? [pbjs] : [],
+    forceModuleImport: esModuleInterop ? [] : [pbjs],
   };
+}
+
+export function addTypeToMessages(options: Options): boolean {
+  return (
+    (options.outputTypeAnnotations || options.outputTypeRegistry) && options.outputTypeAnnotations !== "static-only"
+  );
 }

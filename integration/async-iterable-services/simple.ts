@@ -21,19 +21,24 @@ export const EchoMsg = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): EchoMsg {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseEchoMsg();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 10) {
+            break;
+          }
+
           message.body = reader.string();
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
@@ -44,12 +49,12 @@ export const EchoMsg = {
     source: AsyncIterable<EchoMsg | EchoMsg[]> | Iterable<EchoMsg | EchoMsg[]>,
   ): AsyncIterable<Uint8Array> {
     for await (const pkt of source) {
-      if (Array.isArray(pkt)) {
-        for (const p of pkt) {
+      if (globalThis.Array.isArray(pkt)) {
+        for (const p of (pkt as any)) {
           yield* [EchoMsg.encode(p).finish()];
         }
       } else {
-        yield* [EchoMsg.encode(pkt).finish()];
+        yield* [EchoMsg.encode(pkt as any).finish()];
       }
     }
   },
@@ -60,26 +65,31 @@ export const EchoMsg = {
     source: AsyncIterable<Uint8Array | Uint8Array[]> | Iterable<Uint8Array | Uint8Array[]>,
   ): AsyncIterable<EchoMsg> {
     for await (const pkt of source) {
-      if (Array.isArray(pkt)) {
-        for (const p of pkt) {
+      if (globalThis.Array.isArray(pkt)) {
+        for (const p of (pkt as any)) {
           yield* [EchoMsg.decode(p)];
         }
       } else {
-        yield* [EchoMsg.decode(pkt)];
+        yield* [EchoMsg.decode(pkt as any)];
       }
     }
   },
 
   fromJSON(object: any): EchoMsg {
-    return { body: isSet(object.body) ? String(object.body) : "" };
+    return { body: isSet(object.body) ? globalThis.String(object.body) : "" };
   },
 
   toJSON(message: EchoMsg): unknown {
     const obj: any = {};
-    message.body !== undefined && (obj.body = message.body);
+    if (message.body !== "") {
+      obj.body = message.body;
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<EchoMsg>, I>>(base?: I): EchoMsg {
+    return EchoMsg.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<EchoMsg>, I>>(object: I): EchoMsg {
     const message = createBaseEchoMsg();
     message.body = object.body ?? "";
@@ -99,11 +109,12 @@ export interface Echoer {
   EchoBidiStream(request: AsyncIterable<EchoMsg>): AsyncIterable<EchoMsg>;
 }
 
+export const EchoerServiceName = "simple.Echoer";
 export class EchoerClientImpl implements Echoer {
   private readonly rpc: Rpc;
   private readonly service: string;
   constructor(rpc: Rpc, opts?: { service?: string }) {
-    this.service = opts?.service || "simple.Echoer";
+    this.service = opts?.service || EchoerServiceName;
     this.rpc = rpc;
     this.Echo = this.Echo.bind(this);
     this.EchoServerStream = this.EchoServerStream.bind(this);
@@ -113,7 +124,7 @@ export class EchoerClientImpl implements Echoer {
   Echo(request: EchoMsg): Promise<EchoMsg> {
     const data = EchoMsg.encode(request).finish();
     const promise = this.rpc.request(this.service, "Echo", data);
-    return promise.then((data) => EchoMsg.decode(new _m0.Reader(data)));
+    return promise.then((data) => EchoMsg.decode(_m0.Reader.create(data)));
   }
 
   EchoServerStream(request: EchoMsg): AsyncIterable<EchoMsg> {
@@ -125,7 +136,7 @@ export class EchoerClientImpl implements Echoer {
   EchoClientStream(request: AsyncIterable<EchoMsg>): Promise<EchoMsg> {
     const data = EchoMsg.encodeTransform(request);
     const promise = this.rpc.clientStreamingRequest(this.service, "EchoClientStream", data);
-    return promise.then((data) => EchoMsg.decode(new _m0.Reader(data)));
+    return promise.then((data) => EchoMsg.decode(_m0.Reader.create(data)));
   }
 
   EchoBidiStream(request: AsyncIterable<EchoMsg>): AsyncIterable<EchoMsg> {
@@ -149,7 +160,8 @@ interface Rpc {
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
 export type DeepPartial<T> = T extends Builtin ? T
-  : T extends Array<infer U> ? Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
+  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
   : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
 

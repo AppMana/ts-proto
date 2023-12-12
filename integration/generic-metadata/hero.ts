@@ -37,33 +37,43 @@ export const HeroById = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): HeroById {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseHeroById();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 8) {
+            break;
+          }
+
           message.id = reader.int32();
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): HeroById {
-    return { id: isSet(object.id) ? Number(object.id) : 0 };
+    return { id: isSet(object.id) ? globalThis.Number(object.id) : 0 };
   },
 
   toJSON(message: HeroById): unknown {
     const obj: any = {};
-    message.id !== undefined && (obj.id = Math.round(message.id));
+    if (message.id !== 0) {
+      obj.id = Math.round(message.id);
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<HeroById>, I>>(base?: I): HeroById {
+    return HeroById.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<HeroById>, I>>(object: I): HeroById {
     const message = createBaseHeroById();
     message.id = object.id ?? 0;
@@ -84,33 +94,43 @@ export const VillainById = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): VillainById {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseVillainById();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 8) {
+            break;
+          }
+
           message.id = reader.int32();
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): VillainById {
-    return { id: isSet(object.id) ? Number(object.id) : 0 };
+    return { id: isSet(object.id) ? globalThis.Number(object.id) : 0 };
   },
 
   toJSON(message: VillainById): unknown {
     const obj: any = {};
-    message.id !== undefined && (obj.id = Math.round(message.id));
+    if (message.id !== 0) {
+      obj.id = Math.round(message.id);
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<VillainById>, I>>(base?: I): VillainById {
+    return VillainById.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<VillainById>, I>>(object: I): VillainById {
     const message = createBaseVillainById();
     message.id = object.id ?? 0;
@@ -134,37 +154,56 @@ export const Hero = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): Hero {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseHero();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 8) {
+            break;
+          }
+
           message.id = reader.int32();
-          break;
+          continue;
         case 2:
+          if (tag !== 18) {
+            break;
+          }
+
           message.name = reader.string();
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): Hero {
-    return { id: isSet(object.id) ? Number(object.id) : 0, name: isSet(object.name) ? String(object.name) : "" };
+    return {
+      id: isSet(object.id) ? globalThis.Number(object.id) : 0,
+      name: isSet(object.name) ? globalThis.String(object.name) : "",
+    };
   },
 
   toJSON(message: Hero): unknown {
     const obj: any = {};
-    message.id !== undefined && (obj.id = Math.round(message.id));
-    message.name !== undefined && (obj.name = message.name);
+    if (message.id !== 0) {
+      obj.id = Math.round(message.id);
+    }
+    if (message.name !== "") {
+      obj.name = message.name;
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<Hero>, I>>(base?: I): Hero {
+    return Hero.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<Hero>, I>>(object: I): Hero {
     const message = createBaseHero();
     message.id = object.id ?? 0;
@@ -189,37 +228,56 @@ export const Villain = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): Villain {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseVillain();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 8) {
+            break;
+          }
+
           message.id = reader.int32();
-          break;
+          continue;
         case 2:
+          if (tag !== 18) {
+            break;
+          }
+
           message.name = reader.string();
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): Villain {
-    return { id: isSet(object.id) ? Number(object.id) : 0, name: isSet(object.name) ? String(object.name) : "" };
+    return {
+      id: isSet(object.id) ? globalThis.Number(object.id) : 0,
+      name: isSet(object.name) ? globalThis.String(object.name) : "",
+    };
   },
 
   toJSON(message: Villain): unknown {
     const obj: any = {};
-    message.id !== undefined && (obj.id = Math.round(message.id));
-    message.name !== undefined && (obj.name = message.name);
+    if (message.id !== 0) {
+      obj.id = Math.round(message.id);
+    }
+    if (message.name !== "") {
+      obj.name = message.name;
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<Villain>, I>>(base?: I): Villain {
+    return Villain.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<Villain>, I>>(object: I): Villain {
     const message = createBaseVillain();
     message.id = object.id ?? 0;
@@ -234,11 +292,12 @@ export interface HeroService {
   FindManyVillain(request: Observable<VillainById>, metadata?: Foo): Observable<Villain>;
 }
 
+export const HeroServiceServiceName = "hero.HeroService";
 export class HeroServiceClientImpl implements HeroService {
   private readonly rpc: Rpc;
   private readonly service: string;
   constructor(rpc: Rpc, opts?: { service?: string }) {
-    this.service = opts?.service || "hero.HeroService";
+    this.service = opts?.service || HeroServiceServiceName;
     this.rpc = rpc;
     this.FindOneHero = this.FindOneHero.bind(this);
     this.FindOneVillain = this.FindOneVillain.bind(this);
@@ -247,19 +306,19 @@ export class HeroServiceClientImpl implements HeroService {
   FindOneHero(request: HeroById): Promise<Hero> {
     const data = HeroById.encode(request).finish();
     const promise = this.rpc.request(this.service, "FindOneHero", data);
-    return promise.then((data) => Hero.decode(new _m0.Reader(data)));
+    return promise.then((data) => Hero.decode(_m0.Reader.create(data)));
   }
 
   FindOneVillain(request: VillainById): Promise<Villain> {
     const data = VillainById.encode(request).finish();
     const promise = this.rpc.request(this.service, "FindOneVillain", data);
-    return promise.then((data) => Villain.decode(new _m0.Reader(data)));
+    return promise.then((data) => Villain.decode(_m0.Reader.create(data)));
   }
 
   FindManyVillain(request: Observable<VillainById>): Observable<Villain> {
     const data = request.pipe(map((request) => VillainById.encode(request).finish()));
     const result = this.rpc.bidirectionalStreamingRequest(this.service, "FindManyVillain", data);
-    return result.pipe(map((data) => Villain.decode(new _m0.Reader(data))));
+    return result.pipe(map((data) => Villain.decode(_m0.Reader.create(data))));
   }
 }
 
@@ -305,7 +364,8 @@ interface Rpc {
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
 export type DeepPartial<T> = T extends Builtin ? T
-  : T extends Array<infer U> ? Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
+  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
   : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
 

@@ -1,3 +1,525 @@
+## [1.165.1](https://github.com/stephenh/ts-proto/compare/v1.165.0...v1.165.1) (2023-12-06)
+
+
+### Bug Fixes
+
+* do not mention :local scripts ([#974](https://github.com/stephenh/ts-proto/issues/974)) ([ef30da5](https://github.com/stephenh/ts-proto/commit/ef30da58d60b9098eb50b7e27489ac8ef854022e))
+
+# [1.165.0](https://github.com/stephenh/ts-proto/compare/v1.164.2...v1.165.0) (2023-11-28)
+
+
+### Features
+
+* add error handler to rpc interface ([#965](https://github.com/stephenh/ts-proto/issues/965)) ([47cd16e](https://github.com/stephenh/ts-proto/commit/47cd16e048e19ebc0b8673bccffdade678cc0363))
+
+## [1.164.2](https://github.com/stephenh/ts-proto/compare/v1.164.1...v1.164.2) (2023-11-28)
+
+
+### Bug Fixes
+
+* Don't close client if we've already aborted ([#968](https://github.com/stephenh/ts-proto/issues/968)) ([7ee1507](https://github.com/stephenh/ts-proto/commit/7ee15075b2f35fac92790885c02f5a0edba9a76a))
+
+## [1.164.1](https://github.com/stephenh/ts-proto/compare/v1.164.0...v1.164.1) (2023-11-24)
+
+
+### Bug Fixes
+
+* revert useDate=false behaviour; add useJsonTimestamp option ([#969](https://github.com/stephenh/ts-proto/issues/969)) ([15ae516](https://github.com/stephenh/ts-proto/commit/15ae516ae09b27d5adf41b5e85fe509792c5854e))
+
+# [1.164.0](https://github.com/stephenh/ts-proto/compare/v1.163.0...v1.164.0) (2023-11-09)
+
+
+### Features
+
+* add before and after request methods to base service ([#961](https://github.com/stephenh/ts-proto/issues/961)) ([19ba6a5](https://github.com/stephenh/ts-proto/commit/19ba6a50c6fd4f574e20315e1ec721c5e04dab25))
+
+# [1.163.0](https://github.com/stephenh/ts-proto/compare/v1.162.2...v1.163.0) (2023-11-02)
+
+
+### Features
+
+* generate type namespaces for enums as literals ([#960](https://github.com/stephenh/ts-proto/issues/960)) ([e2619f6](https://github.com/stephenh/ts-proto/commit/e2619f6191e8bfb1deaf8474c26ea386c5c34e63))
+
+## [1.162.2](https://github.com/stephenh/ts-proto/compare/v1.162.1...v1.162.2) (2023-10-26)
+
+
+### Bug Fixes
+
+* return types and optional chaining in field masks when `useOptionals=all` ([#957](https://github.com/stephenh/ts-proto/issues/957)) ([a3d7bd4](https://github.com/stephenh/ts-proto/commit/a3d7bd4eaf0b25cd8d7991cc85893ce3d8ab7937))
+
+## [1.162.1](https://github.com/stephenh/ts-proto/compare/v1.162.0...v1.162.1) (2023-10-13)
+
+
+### Bug Fixes
+
+* Simplify safe key handling. ([#950](https://github.com/stephenh/ts-proto/issues/950)) ([5e0e6ca](https://github.com/stephenh/ts-proto/commit/5e0e6ca1d76f5c9aaef5f40a9cc685538251a5f9))
+
+# [1.162.0](https://github.com/stephenh/ts-proto/compare/v1.161.1...v1.162.0) (2023-10-13)
+
+
+### Features
+
+* support `json_name` defined in a proto file ([#943](https://github.com/stephenh/ts-proto/issues/943)) ([de989af](https://github.com/stephenh/ts-proto/commit/de989af0d9bf9910dc3c047a18d97f289bffe2ee))
+
+## [1.161.1](https://github.com/stephenh/ts-proto/compare/v1.161.0...v1.161.1) (2023-10-10)
+
+
+### Bug Fixes
+
+* use optional chaining when both `forceLong=long` and `useOptionals=all` options are set in the generated fromTimestamp function ([#949](https://github.com/stephenh/ts-proto/issues/949)) ([b00db6f](https://github.com/stephenh/ts-proto/commit/b00db6fa42d511b9bef602a231a1f093664cd40c))
+
+# [1.161.0](https://github.com/stephenh/ts-proto/compare/v1.160.0...v1.161.0) (2023-10-10)
+
+
+### Features
+
+* add unrecognizedEnumName and unrecognizedEnumValue options ([#946](https://github.com/stephenh/ts-proto/issues/946)) ([cd61e90](https://github.com/stephenh/ts-proto/commit/cd61e90e59844795fb5d7d86ec99bd37d2fdf21b))
+
+# [1.160.0](https://github.com/stephenh/ts-proto/compare/v1.159.3...v1.160.0) (2023-10-05)
+
+
+### Features
+
+* add bigint input validation ([#938](https://github.com/stephenh/ts-proto/issues/938)) ([0f9b6b1](https://github.com/stephenh/ts-proto/commit/0f9b6b1c5982427f77b111466a11c18e57b070bd))
+
+## [1.159.3](https://github.com/stephenh/ts-proto/compare/v1.159.2...v1.159.3) (2023-10-04)
+
+
+### Bug Fixes
+
+* toJSON methods don't respect useDate=false ([#935](https://github.com/stephenh/ts-proto/issues/935)) ([#937](https://github.com/stephenh/ts-proto/issues/937)) ([acdfb0a](https://github.com/stephenh/ts-proto/commit/acdfb0a100c9de1d51cb1710cc3fb40566d16706))
+
+## [1.159.2](https://github.com/stephenh/ts-proto/compare/v1.159.1...v1.159.2) (2023-10-02)
+
+
+### Bug Fixes
+
+* Support using messages called String/Boolean/Number/Array ([#934](https://github.com/stephenh/ts-proto/issues/934)) ([f75159b](https://github.com/stephenh/ts-proto/commit/f75159bde85c8d85a2be938c6e3db78c77318890)), closes [#927](https://github.com/stephenh/ts-proto/issues/927)
+
+## [1.159.1](https://github.com/stephenh/ts-proto/compare/v1.159.0...v1.159.1) (2023-09-30)
+
+
+### Bug Fixes
+
+* Use a Map when map keys are boolean. ([#933](https://github.com/stephenh/ts-proto/issues/933)) ([c1253a3](https://github.com/stephenh/ts-proto/commit/c1253a3761405d7a2ffe4d15f4c3ffb364697a02)), closes [#926](https://github.com/stephenh/ts-proto/issues/926)
+
+# [1.159.0](https://github.com/stephenh/ts-proto/compare/v1.158.1...v1.159.0) (2023-09-30)
+
+
+### Features
+
+* Add globalThisPolyfill, defaults false. ([#931](https://github.com/stephenh/ts-proto/issues/931)) ([085fa21](https://github.com/stephenh/ts-proto/commit/085fa21603a74544af192f404289c2e62ecfd8f6))
+
+## [1.158.1](https://github.com/stephenh/ts-proto/compare/v1.158.0...v1.158.1) (2023-09-30)
+
+
+### Bug Fixes
+
+* Use globalThis for Array/String/Boolean ([#930](https://github.com/stephenh/ts-proto/issues/930)) ([9a252c3](https://github.com/stephenh/ts-proto/commit/9a252c3d4cf988496f6de17cc378dbb09a1baf92))
+
+# [1.158.0](https://github.com/stephenh/ts-proto/compare/v1.157.1...v1.158.0) (2023-09-24)
+
+
+### Features
+
+* adds support for emitting default scalar values in json ([#919](https://github.com/stephenh/ts-proto/issues/919)) ([01f529f](https://github.com/stephenh/ts-proto/commit/01f529f2b0eed486356ff6add9a43aabde3d1d0d))
+
+## [1.157.1](https://github.com/stephenh/ts-proto/compare/v1.157.0...v1.157.1) (2023-09-18)
+
+
+### Bug Fixes
+
+* Update type imports syntax on gRPC generation ([#921](https://github.com/stephenh/ts-proto/issues/921)) ([b10ab31](https://github.com/stephenh/ts-proto/commit/b10ab31a479420413998840eab866ab51f72285d))
+
+# [1.157.0](https://github.com/stephenh/ts-proto/compare/v1.156.8...v1.157.0) (2023-09-03)
+
+
+### Features
+
+* enum decoding ([#910](https://github.com/stephenh/ts-proto/issues/910)) ([9e0a0b5](https://github.com/stephenh/ts-proto/commit/9e0a0b5c86004313f65eae88b8dc5e63deaaf251)), closes [ts-proto-#859](https://github.com/ts-proto-/issues/859) [ts-proto#859](https://github.com/ts-proto/issues/859) [ts-proto#859](https://github.com/ts-proto/issues/859) [ts-proto-#859](https://github.com/ts-proto-/issues/859) [#909](https://github.com/stephenh/ts-proto/issues/909)
+
+## [1.156.8](https://github.com/stephenh/ts-proto/compare/v1.156.7...v1.156.8) (2023-09-03)
+
+
+### Bug Fixes
+
+* fixing exportCommonSymbols in nestjs ([#916](https://github.com/stephenh/ts-proto/issues/916)) ([daf41f7](https://github.com/stephenh/ts-proto/commit/daf41f7c2654e801994c0791fb3f9f178b5d8ad8))
+
+## [1.156.7](https://github.com/stephenh/ts-proto/compare/v1.156.6...v1.156.7) (2023-08-18)
+
+
+### Bug Fixes
+
+* always use Map for int64 keys ([#708](https://github.com/stephenh/ts-proto/issues/708)) ([#905](https://github.com/stephenh/ts-proto/issues/905)) ([cf2fb59](https://github.com/stephenh/ts-proto/commit/cf2fb59de20f8a60ead23294439dacbdbe6dfc14))
+
+## [1.156.6](https://github.com/stephenh/ts-proto/compare/v1.156.5...v1.156.6) (2023-08-16)
+
+
+### Bug Fixes
+
+* use correct imports for optional fields ([#904](https://github.com/stephenh/ts-proto/issues/904)) ([fa13ec7](https://github.com/stephenh/ts-proto/commit/fa13ec752c6564af045081548f5fc5cabb687151))
+
+## [1.156.5](https://github.com/stephenh/ts-proto/compare/v1.156.4...v1.156.5) (2023-08-15)
+
+
+### Bug Fixes
+
+* remove-enum-prefix for nested enums ([#903](https://github.com/stephenh/ts-proto/issues/903)) ([efdbf47](https://github.com/stephenh/ts-proto/commit/efdbf476b26c49c1bc56f9404f49667f2acc1f8b))
+
+## [1.156.4](https://github.com/stephenh/ts-proto/compare/v1.156.3...v1.156.4) (2023-08-15)
+
+
+### Bug Fixes
+
+* enum default value when remove-enum-prefix and string-enum both on ([#902](https://github.com/stephenh/ts-proto/issues/902)) ([594b137](https://github.com/stephenh/ts-proto/commit/594b137cdffbf6256b9d0ee6bb82822ce22c7b94))
+
+## [1.156.3](https://github.com/stephenh/ts-proto/compare/v1.156.2...v1.156.3) (2023-08-13)
+
+
+### Bug Fixes
+
+* Only check file dependencies once/file. ([#901](https://github.com/stephenh/ts-proto/issues/901)) ([8d61980](https://github.com/stephenh/ts-proto/commit/8d6198020a5ec775b0dbaf7e08924f4bdcc677f8)), closes [#900](https://github.com/stephenh/ts-proto/issues/900)
+
+## [1.156.2](https://github.com/stephenh/ts-proto/compare/v1.156.1...v1.156.2) (2023-07-29)
+
+
+### Bug Fixes
+
+* Add 'as any' in create ([#895](https://github.com/stephenh/ts-proto/issues/895)) ([4214d5a](https://github.com/stephenh/ts-proto/commit/4214d5af98817f317760298b1b2e03a8e956329c)), closes [#838](https://github.com/stephenh/ts-proto/issues/838)
+
+## [1.156.1](https://github.com/stephenh/ts-proto/compare/v1.156.0...v1.156.1) (2023-07-22)
+
+
+### Bug Fixes
+
+* Depend specifically on long 5.2.3. ([#892](https://github.com/stephenh/ts-proto/issues/892)) ([2b976f2](https://github.com/stephenh/ts-proto/commit/2b976f295fc1fbab6d0fb5ad86cfad26ed722c8a))
+
+# [1.156.0](https://github.com/stephenh/ts-proto/compare/v1.155.1...v1.156.0) (2023-07-20)
+
+
+### Features
+
+* **ts-proto-#859:** added encode-only options to toJSON methods ([#886](https://github.com/stephenh/ts-proto/issues/886)) ([d0cf57d](https://github.com/stephenh/ts-proto/commit/d0cf57d9a1aebdec3bec67585658362b1a38d6a3)), closes [ts-proto-#859](https://github.com/ts-proto-/issues/859) [ts-proto-#859](https://github.com/ts-proto-/issues/859) [ts-proto#859](https://github.com/ts-proto/issues/859) [ts-proto#859](https://github.com/ts-proto/issues/859) [ts-proto-#859](https://github.com/ts-proto-/issues/859)
+
+## [1.155.1](https://github.com/stephenh/ts-proto/compare/v1.155.0...v1.155.1) (2023-07-15)
+
+
+### Bug Fixes
+
+* Bump descriptors. ([#883](https://github.com/stephenh/ts-proto/issues/883)) ([e2cf184](https://github.com/stephenh/ts-proto/commit/e2cf1848c1c70a8bbe73756e1cf530c5d70f5ce2))
+
+# [1.155.0](https://github.com/stephenh/ts-proto/compare/v1.154.0...v1.155.0) (2023-07-15)
+
+
+### Features
+
+* Upgrade to long 5.0.0. ([#882](https://github.com/stephenh/ts-proto/issues/882)) ([4c1e7a6](https://github.com/stephenh/ts-proto/commit/4c1e7a6e02f974f193063a83ce7a472b14f2d2d0))
+
+# [1.154.0](https://github.com/stephenh/ts-proto/compare/v1.153.3...v1.154.0) (2023-07-15)
+
+
+### Features
+
+* Normalize `toJSON` output by omitting fields set to their default values ([#878](https://github.com/stephenh/ts-proto/issues/878)) ([50958d6](https://github.com/stephenh/ts-proto/commit/50958d639435a32a76d59fc57565e3677f5be39e))
+
+## [1.153.3](https://github.com/stephenh/ts-proto/compare/v1.153.2...v1.153.3) (2023-07-13)
+
+
+### Bug Fixes
+
+* Bump ts-proto-descriptors w/long back. ([#880](https://github.com/stephenh/ts-proto/issues/880)) ([d27e19c](https://github.com/stephenh/ts-proto/commit/d27e19c84420d46dff0fc1914ce724ec15f86185))
+
+## [1.153.2](https://github.com/stephenh/ts-proto/compare/v1.153.1...v1.153.2) (2023-07-12)
+
+
+### Bug Fixes
+
+* Move dataloader to a devDependency. ([#877](https://github.com/stephenh/ts-proto/issues/877)) ([dbe1a96](https://github.com/stephenh/ts-proto/commit/dbe1a967ced7863492f82a977d6e5d34f4f034a6))
+
+## [1.153.1](https://github.com/stephenh/ts-proto/compare/v1.153.0...v1.153.1) (2023-07-12)
+
+
+### Bug Fixes
+
+* Bump ts-proto-descriptors. ([#876](https://github.com/stephenh/ts-proto/issues/876)) ([ad57819](https://github.com/stephenh/ts-proto/commit/ad57819a16b5f3886bde3c8f63231dc70f84d250))
+
+# [1.153.0](https://github.com/stephenh/ts-proto/compare/v1.152.1...v1.153.0) (2023-07-12)
+
+
+### Features
+
+* Update protobufjs (and peer dependencies) to ^7 ([#874](https://github.com/stephenh/ts-proto/issues/874)) ([7f979a7](https://github.com/stephenh/ts-proto/commit/7f979a70af2e42c8c429ae5f65787e0b43ccb706))
+
+## [1.152.1](https://github.com/stephenh/ts-proto/compare/v1.152.0...v1.152.1) (2023-07-10)
+
+
+### Bug Fixes
+
+* Fix invocation error. ([f4e26bd](https://github.com/stephenh/ts-proto/commit/f4e26bd44f6882318defab1fccd0d6a833823fc0))
+
+# [1.152.0](https://github.com/stephenh/ts-proto/compare/v1.151.1...v1.152.0) (2023-07-10)
+
+
+### Features
+
+* Ensure strict(er) TS compliance for the generated code ([#868](https://github.com/stephenh/ts-proto/issues/868)) ([1405d4b](https://github.com/stephenh/ts-proto/commit/1405d4bcc866343605946ac4a0b30e7de9c75e71))
+
+## [1.151.1](https://github.com/stephenh/ts-proto/compare/v1.151.0...v1.151.1) (2023-07-05)
+
+
+### Bug Fixes
+
+* generate different MessageType when using static-only ([#863](https://github.com/stephenh/ts-proto/issues/863)) ([477e5f5](https://github.com/stephenh/ts-proto/commit/477e5f5bc0aaf70a92d7231f4a9e746d13b2bbcf)), closes [#861](https://github.com/stephenh/ts-proto/issues/861)
+
+# [1.151.0](https://github.com/stephenh/ts-proto/compare/v1.150.1...v1.151.0) (2023-07-04)
+
+
+### Features
+
+* Add static-only variant to to outputTypeAnnotations option ([#858](https://github.com/stephenh/ts-proto/issues/858)) ([d7c4af7](https://github.com/stephenh/ts-proto/commit/d7c4af7e068200b30cf773703ef906595aec6042))
+
+## [1.150.1](https://github.com/stephenh/ts-proto/compare/v1.150.0...v1.150.1) (2023-06-23)
+
+
+### Bug Fixes
+
+* don't generate transitively imported files for mapped imports ([#854](https://github.com/stephenh/ts-proto/issues/854)) ([edd9044](https://github.com/stephenh/ts-proto/commit/edd9044568739b089f1ec66b53d0cc36d540610b))
+
+# [1.150.0](https://github.com/stephenh/ts-proto/compare/v1.149.0...v1.150.0) (2023-06-20)
+
+
+### Features
+
+* expose service name as a separate exported constant ([#851](https://github.com/stephenh/ts-proto/issues/851)) ([84a4ed6](https://github.com/stephenh/ts-proto/commit/84a4ed610089363e3ee7a6a29581d8e0ef695f0d))
+
+# [1.149.0](https://github.com/stephenh/ts-proto/compare/v1.148.2...v1.149.0) (2023-06-13)
+
+
+### Features
+
+* support lib: es6 ([#850](https://github.com/stephenh/ts-proto/issues/850)) ([6280677](https://github.com/stephenh/ts-proto/commit/62806776beacb1e2b0ee921e4212f1e61ce5191e))
+
+## [1.148.2](https://github.com/stephenh/ts-proto/compare/v1.148.1...v1.148.2) (2023-06-04)
+
+
+### Bug Fixes
+
+* esModuleInterop not working for object-hash and dataloader imports ([#794](https://github.com/stephenh/ts-proto/issues/794)) ([9fc9632](https://github.com/stephenh/ts-proto/commit/9fc9632e03a18f7a2d6e95a72ff959be93199981))
+
+## [1.148.1](https://github.com/stephenh/ts-proto/compare/v1.148.0...v1.148.1) (2023-05-25)
+
+
+### Bug Fixes
+
+* add callback close condition ([#837](https://github.com/stephenh/ts-proto/issues/837)) ([2071c67](https://github.com/stephenh/ts-proto/commit/2071c67650a3ac80ec9b5845fec3227ee47841d0))
+
+# [1.148.0](https://github.com/stephenh/ts-proto/compare/v1.147.3...v1.148.0) (2023-05-23)
+
+
+### Features
+
+* Generate Index Files ([#821](https://github.com/stephenh/ts-proto/issues/821)) ([85bf206](https://github.com/stephenh/ts-proto/commit/85bf206ca8c1052849aea3e39522ad4918e0d736))
+
+## [1.147.3](https://github.com/stephenh/ts-proto/compare/v1.147.2...v1.147.3) (2023-05-16)
+
+
+### Bug Fixes
+
+* ensure generated fromTimestamp works when useOptionals=all ([#832](https://github.com/stephenh/ts-proto/issues/832)) ([1f82445](https://github.com/stephenh/ts-proto/commit/1f8244569de87ad99ed3676244e51291af9b3323))
+
+## [1.147.2](https://github.com/stephenh/ts-proto/compare/v1.147.1...v1.147.2) (2023-05-07)
+
+
+### Bug Fixes
+
+* import Observable as a type ([#826](https://github.com/stephenh/ts-proto/issues/826)) ([52e84ba](https://github.com/stephenh/ts-proto/commit/52e84ba7ee8826cf3b33455b38bacfd0c68884ea))
+
+## [1.147.1](https://github.com/stephenh/ts-proto/compare/v1.147.0...v1.147.1) (2023-05-02)
+
+
+### Bug Fixes
+
+* Try fixing the Buf publish step. ([47ef176](https://github.com/stephenh/ts-proto/commit/47ef176056108bba8fb553f0d7b53d11e139bfbc))
+
+# [1.147.0](https://github.com/stephenh/ts-proto/compare/v1.146.0...v1.147.0) (2023-05-02)
+
+
+### Features
+
+* Add type annotations flag ([#786](https://github.com/stephenh/ts-proto/issues/786)) ([b565ff5](https://github.com/stephenh/ts-proto/commit/b565ff57c0a64a3869ba7475c2b53f46504169d0))
+
+# [1.146.0](https://github.com/stephenh/ts-proto/compare/v1.145.0...v1.146.0) (2023-04-01)
+
+
+### Features
+
+* extensions ([#808](https://github.com/stephenh/ts-proto/issues/808)) ([f956128](https://github.com/stephenh/ts-proto/commit/f956128ad830f4538452d65dccedca3e08d6c871))
+
+# [1.145.0](https://github.com/stephenh/ts-proto/compare/v1.144.1...v1.145.0) (2023-03-27)
+
+
+### Bug Fixes
+
+* various fixes ([#812](https://github.com/stephenh/ts-proto/issues/812)) ([ca18495](https://github.com/stephenh/ts-proto/commit/ca184958957b2c546e9a84173bc1c73425e33bc5))
+
+
+### Features
+
+* Update fromPartial and fromJson to respect initializeFieldsAsUndefined ([#811](https://github.com/stephenh/ts-proto/issues/811)) ([1615ae0](https://github.com/stephenh/ts-proto/commit/1615ae0b136bc8909e206b44f3bd6ec568a760e6))
+
+## [1.144.1](https://github.com/stephenh/ts-proto/compare/v1.144.0...v1.144.1) (2023-03-26)
+
+
+### Bug Fixes
+
+* Bump ts-proto-descriptors to restore any-less _unknownFields. ([#810](https://github.com/stephenh/ts-proto/issues/810)) ([de9c307](https://github.com/stephenh/ts-proto/commit/de9c3079210caed1d0d3da782a4d0f2e54f52652))
+
+# [1.144.0](https://github.com/stephenh/ts-proto/compare/v1.143.0...v1.144.0) (2023-03-26)
+
+
+### Bug Fixes
+
+* Temporarily put anys back to release. ([c6f189e](https://github.com/stephenh/ts-proto/commit/c6f189e62605553707534a86bf1964ad178dbd73))
+
+
+### Features
+
+* include _unknownFields as a field ([#806](https://github.com/stephenh/ts-proto/issues/806)) ([6b4ba39](https://github.com/stephenh/ts-proto/commit/6b4ba39a0651a2352db2ac70eb91d21138ccf887))
+
+# [1.143.0](https://github.com/stephenh/ts-proto/compare/v1.142.1...v1.143.0) (2023-03-19)
+
+
+### Bug Fixes
+
+* initialize undefined optional fields upon use ([#802](https://github.com/stephenh/ts-proto/issues/802)) ([ee52e06](https://github.com/stephenh/ts-proto/commit/ee52e06a95d7790d1252831f1bb01344c94f16a4))
+
+
+### Features
+
+* group encoding and decoding support ([#799](https://github.com/stephenh/ts-proto/issues/799)) ([5ebe3c0](https://github.com/stephenh/ts-proto/commit/5ebe3c07f5039db4f9b40e4e237d02d03c85a4e5))
+
+
+### Performance Improvements
+
+* use array.push to prevent reallocation on every field ([#804](https://github.com/stephenh/ts-proto/issues/804)) ([a6aea2c](https://github.com/stephenh/ts-proto/commit/a6aea2ca9e61611cf22417d23eb71a5d6e4f2164))
+
+## [1.142.1](https://github.com/stephenh/ts-proto/compare/v1.142.0...v1.142.1) (2023-03-18)
+
+
+### Performance Improvements
+
+* use Reader.create ([#800](https://github.com/stephenh/ts-proto/issues/800)) ([869e448](https://github.com/stephenh/ts-proto/commit/869e44876c88ccfb82cb4a48731b340a0fb2c025))
+
+# [1.142.0](https://github.com/stephenh/ts-proto/compare/v1.141.1...v1.142.0) (2023-03-18)
+
+
+### Features
+
+* service options unknown methods ([#801](https://github.com/stephenh/ts-proto/issues/801)) ([994d0d0](https://github.com/stephenh/ts-proto/commit/994d0d0ac54b3e22cb27fa4c5b8a5b1d17b62521))
+
+## [1.141.1](https://github.com/stephenh/ts-proto/compare/v1.141.0...v1.141.1) (2023-03-11)
+
+
+### Bug Fixes
+
+* implement abort grpc web ([#785](https://github.com/stephenh/ts-proto/issues/785)) ([6a40d72](https://github.com/stephenh/ts-proto/commit/6a40d72d6a41d91264366d238dafd08291eba0b7))
+
+# [1.141.0](https://github.com/stephenh/ts-proto/compare/v1.140.0...v1.141.0) (2023-03-08)
+
+
+### Features
+
+* output-encode-only methods ([#787](https://github.com/stephenh/ts-proto/issues/787)) ([3594410](https://github.com/stephenh/ts-proto/commit/3594410cc18fecc9c6f76f8abf7bdf9fdd178acd))
+
+# [1.140.0](https://github.com/stephenh/ts-proto/compare/v1.139.0...v1.140.0) (2023-02-24)
+
+
+### Features
+
+* `removeEnumPrefix` option ([#779](https://github.com/stephenh/ts-proto/issues/779)) ([53733e6](https://github.com/stephenh/ts-proto/commit/53733e61232f19ffb4f30abecd55a63899e2310c))
+* implementation of useAbortSignal option for grpc-web ([#777](https://github.com/stephenh/ts-proto/issues/777)) ([7a3d429](https://github.com/stephenh/ts-proto/commit/7a3d4291806568a938e88f53a55683633f26ec4a))
+
+# [1.139.0](https://github.com/stephenh/ts-proto/compare/v1.138.0...v1.139.0) (2023-01-31)
+
+
+### Features
+
+* add support for Struct in NestJS ([#762](https://github.com/stephenh/ts-proto/issues/762)) ([e8c6d8b](https://github.com/stephenh/ts-proto/commit/e8c6d8ba7bee902dbbda0c36dd9f6accfd222542))
+
+
+### Performance Improvements
+
+* generate switch statement for oneof union encode ([#767](https://github.com/stephenh/ts-proto/issues/767)) ([c3fd1e3](https://github.com/stephenh/ts-proto/commit/c3fd1e3e487d1da3e8c792354d6491cadb067ff4))
+
+# [1.138.0](https://github.com/stephenh/ts-proto/compare/v1.137.2...v1.138.0) (2023-01-10)
+
+
+### Features
+
+* add create utility function to message defintions ([#760](https://github.com/stephenh/ts-proto/issues/760)) ([44fc7b2](https://github.com/stephenh/ts-proto/commit/44fc7b23ae72ec9c4fca86bee9a9774be097c058))
+
+## [1.137.2](https://github.com/stephenh/ts-proto/compare/v1.137.1...v1.137.2) (2023-01-09)
+
+
+### Bug Fixes
+
+* repeated uint64 fields do not encode properly with bigint option ([#751](https://github.com/stephenh/ts-proto/issues/751)) ([dcdd7e2](https://github.com/stephenh/ts-proto/commit/dcdd7e23479721d127138eeda8b143c100a0730a))
+
+## [1.137.1](https://github.com/stephenh/ts-proto/compare/v1.137.0...v1.137.1) (2023-01-07)
+
+
+### Bug Fixes
+
+* grpc-js timestamp conversion ([#755](https://github.com/stephenh/ts-proto/issues/755)) ([9d24bd3](https://github.com/stephenh/ts-proto/commit/9d24bd39d0fbebf636ba4aaf6567988bc177a413)), closes [#754](https://github.com/stephenh/ts-proto/issues/754)
+
+# [1.137.0](https://github.com/stephenh/ts-proto/compare/v1.136.1...v1.137.0) (2022-12-29)
+
+
+### Bug Fixes
+
+* Additional fix for structs with useMapType. ([#743](https://github.com/stephenh/ts-proto/issues/743)) ([3264b0f](https://github.com/stephenh/ts-proto/commit/3264b0f4a98f3e00b262ce8af7927b0bc0375160))
+* Fix codegen for google.protobuf.Struct with useMapType=true ([#740](https://github.com/stephenh/ts-proto/issues/740)) ([0647151](https://github.com/stephenh/ts-proto/commit/0647151b356d7b22f8baf72b70f5a0353259b404))
+
+
+### Features
+
+* added bigint force long option ([#742](https://github.com/stephenh/ts-proto/issues/742)) ([3964e57](https://github.com/stephenh/ts-proto/commit/3964e575a6bdf90bbde937bcc71ac1f0255831b3))
+
+## [1.136.1](https://github.com/stephenh/ts-proto/compare/v1.136.0...v1.136.1) (2022-12-16)
+
+
+### Bug Fixes
+
+* Avoid namespace conflict on globalThis. ([#735](https://github.com/stephenh/ts-proto/issues/735)) ([71e919e](https://github.com/stephenh/ts-proto/commit/71e919e7de4a2482e9389a5cbfd76853a1db73fb)), closes [#732](https://github.com/stephenh/ts-proto/issues/732)
+
+# [1.136.0](https://github.com/stephenh/ts-proto/compare/v1.135.3...v1.136.0) (2022-12-14)
+
+
+### Features
+
+* RPC: add useAbortSignal option ([#731](https://github.com/stephenh/ts-proto/issues/731)) ([69313a7](https://github.com/stephenh/ts-proto/commit/69313a7a0f19c41c61824081e12ed680fda32b74)), closes [#730](https://github.com/stephenh/ts-proto/issues/730)
+
+## [1.135.3](https://github.com/stephenh/ts-proto/compare/v1.135.2...v1.135.3) (2022-12-12)
+
+
+### Bug Fixes
+
+* return grpc-web response without toObject method ([#728](https://github.com/stephenh/ts-proto/issues/728)) ([7431aa8](https://github.com/stephenh/ts-proto/commit/7431aa8e5718ad8a8fe48651798f203995bf705b)), closes [stephenh/ts-proto#636](https://github.com/stephenh/ts-proto/issues/636)
+
+## [1.135.2](https://github.com/stephenh/ts-proto/compare/v1.135.1...v1.135.2) (2022-12-09)
+
+
+### Bug Fixes
+
+* Fix buf publishing with yarn v3. ([#726](https://github.com/stephenh/ts-proto/issues/726)) ([e125d2b](https://github.com/stephenh/ts-proto/commit/e125d2bad21acfb27579b1ce252151678a91f2bc))
+
+## [1.135.1](https://github.com/stephenh/ts-proto/compare/v1.135.0...v1.135.1) (2022-12-09)
+
+
+### Bug Fixes
+
+* Add functionality for grpc camel case to respect splitting by word ([#721](https://github.com/stephenh/ts-proto/issues/721)) ([4af040c](https://github.com/stephenh/ts-proto/commit/4af040c233792862db85c07d01d1b210a13cae2c)), closes [#722](https://github.com/stephenh/ts-proto/issues/722)
+
 # [1.135.0](https://github.com/stephenh/ts-proto/compare/v1.134.0...v1.135.0) (2022-11-26)
 
 

@@ -30,25 +30,38 @@ export const Parent = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): Parent {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseParent();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 10) {
+            break;
+          }
+
           message.child = Child.decode(reader, reader.uint32());
-          break;
+          continue;
         case 2:
+          if (tag !== 16) {
+            break;
+          }
+
           message.childEnum = reader.int32() as any;
-          break;
+          continue;
         case 3:
+          if (tag !== 26) {
+            break;
+          }
+
           message.createdAt = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
@@ -63,12 +76,21 @@ export const Parent = {
 
   toJSON(message: Parent): unknown {
     const obj: any = {};
-    message.child !== undefined && (obj.child = message.child ? Child.toJSON(message.child) : undefined);
-    message.childEnum !== undefined && (obj.childEnum = childEnumToJSON(message.childEnum));
-    message.createdAt !== undefined && (obj.createdAt = message.createdAt.toISOString());
+    if (message.child !== undefined) {
+      obj.child = Child.toJSON(message.child);
+    }
+    if (message.childEnum !== 0) {
+      obj.childEnum = childEnumToJSON(message.childEnum);
+    }
+    if (message.createdAt !== undefined) {
+      obj.createdAt = message.createdAt.toISOString();
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<Parent>, I>>(base?: I): Parent {
+    return Parent.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<Parent>, I>>(object: I): Parent {
     const message = createBaseParent();
     message.child = (object.child !== undefined && object.child !== null) ? Child.fromPartial(object.child) : undefined;
@@ -81,7 +103,8 @@ export const Parent = {
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
 export type DeepPartial<T> = T extends Builtin ? T
-  : T extends Array<infer U> ? Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
+  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
   : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
 
@@ -96,16 +119,16 @@ function toTimestamp(date: Date): Timestamp {
 }
 
 function fromTimestamp(t: Timestamp): Date {
-  let millis = t.seconds * 1_000;
-  millis += t.nanos / 1_000_000;
-  return new Date(millis);
+  let millis = (t.seconds || 0) * 1_000;
+  millis += (t.nanos || 0) / 1_000_000;
+  return new globalThis.Date(millis);
 }
 
 function fromJsonTimestamp(o: any): Date {
-  if (o instanceof Date) {
+  if (o instanceof globalThis.Date) {
     return o;
   } else if (typeof o === "string") {
-    return new Date(o);
+    return new globalThis.Date(o);
   } else {
     return fromTimestamp(Timestamp.fromJSON(o));
   }

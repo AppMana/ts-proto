@@ -24,37 +24,56 @@ export const Foo = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): Foo {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseFoo();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 10) {
+            break;
+          }
+
           message.bar = reader.string();
-          break;
+          continue;
         case 2:
+          if (tag !== 18) {
+            break;
+          }
+
           message.baz = reader.string();
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): Foo {
-    return { bar: isSet(object.bar) ? String(object.bar) : "", baz: isSet(object.baz) ? String(object.baz) : "" };
+    return {
+      bar: isSet(object.bar) ? globalThis.String(object.bar) : "",
+      baz: isSet(object.baz) ? globalThis.String(object.baz) : "",
+    };
   },
 
   toJSON(message: Foo): unknown {
     const obj: any = {};
-    message.bar !== undefined && (obj.bar = message.bar);
-    message.baz !== undefined && (obj.baz = message.baz);
+    if (message.bar !== "") {
+      obj.bar = message.bar;
+    }
+    if (message.baz !== "") {
+      obj.baz = message.baz;
+    }
     return obj;
   },
 
+  create(base?: DeepPartial<Foo>): Foo {
+    return Foo.fromPartial(base ?? {});
+  },
   fromPartial(object: DeepPartial<Foo>): Foo {
     const message = createBaseFoo();
     message.bar = object.bar ?? "";
@@ -66,7 +85,8 @@ export const Foo = {
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
 export type DeepPartial<T> = T extends Builtin ? T
-  : T extends Array<infer U> ? Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
+  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
   : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
 

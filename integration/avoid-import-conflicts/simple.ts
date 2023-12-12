@@ -56,6 +56,11 @@ export interface Simple {
   otherSimple: Simple3 | undefined;
 }
 
+export interface DifferentSimple {
+  name: string;
+  otherOptionalSimple2?: Simple3 | undefined;
+}
+
 export interface SimpleEnums {
   localEnum: SimpleEnum;
   importEnum: SimpleEnum1;
@@ -85,46 +90,139 @@ export const Simple = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): Simple {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseSimple();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 10) {
+            break;
+          }
+
           message.name = reader.string();
-          break;
+          continue;
         case 2:
+          if (tag !== 18) {
+            break;
+          }
+
           message.otherSimple = Simple3.decode(reader, reader.uint32());
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): Simple {
     return {
-      name: isSet(object.name) ? String(object.name) : "",
+      name: isSet(object.name) ? globalThis.String(object.name) : "",
       otherSimple: isSet(object.otherSimple) ? Simple3.fromJSON(object.otherSimple) : undefined,
     };
   },
 
   toJSON(message: Simple): unknown {
     const obj: any = {};
-    message.name !== undefined && (obj.name = message.name);
-    message.otherSimple !== undefined &&
-      (obj.otherSimple = message.otherSimple ? Simple3.toJSON(message.otherSimple) : undefined);
+    if (message.name !== "") {
+      obj.name = message.name;
+    }
+    if (message.otherSimple !== undefined) {
+      obj.otherSimple = Simple3.toJSON(message.otherSimple);
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<Simple>, I>>(base?: I): Simple {
+    return Simple.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<Simple>, I>>(object: I): Simple {
     const message = createBaseSimple();
     message.name = object.name ?? "";
     message.otherSimple = (object.otherSimple !== undefined && object.otherSimple !== null)
       ? Simple3.fromPartial(object.otherSimple)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseDifferentSimple(): DifferentSimple {
+  return { name: "", otherOptionalSimple2: undefined };
+}
+
+export const DifferentSimple = {
+  encode(message: DifferentSimple, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.name !== "") {
+      writer.uint32(10).string(message.name);
+    }
+    if (message.otherOptionalSimple2 !== undefined) {
+      Simple3.encode(message.otherOptionalSimple2, writer.uint32(18).fork()).ldelim();
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): DifferentSimple {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseDifferentSimple();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 10) {
+            break;
+          }
+
+          message.name = reader.string();
+          continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
+          message.otherOptionalSimple2 = Simple3.decode(reader, reader.uint32());
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): DifferentSimple {
+    return {
+      name: isSet(object.name) ? globalThis.String(object.name) : "",
+      otherOptionalSimple2: isSet(object.otherOptionalSimple2)
+        ? Simple3.fromJSON(object.otherOptionalSimple2)
+        : undefined,
+    };
+  },
+
+  toJSON(message: DifferentSimple): unknown {
+    const obj: any = {};
+    if (message.name !== "") {
+      obj.name = message.name;
+    }
+    if (message.otherOptionalSimple2 !== undefined) {
+      obj.otherOptionalSimple2 = Simple3.toJSON(message.otherOptionalSimple2);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<DifferentSimple>, I>>(base?: I): DifferentSimple {
+    return DifferentSimple.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<DifferentSimple>, I>>(object: I): DifferentSimple {
+    const message = createBaseDifferentSimple();
+    message.name = object.name ?? "";
+    message.otherOptionalSimple2 = (object.otherOptionalSimple2 !== undefined && object.otherOptionalSimple2 !== null)
+      ? Simple3.fromPartial(object.otherOptionalSimple2)
       : undefined;
     return message;
   },
@@ -146,22 +244,31 @@ export const SimpleEnums = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): SimpleEnums {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseSimpleEnums();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 8) {
+            break;
+          }
+
           message.localEnum = reader.int32() as any;
-          break;
+          continue;
         case 2:
+          if (tag !== 16) {
+            break;
+          }
+
           message.importEnum = reader.int32() as any;
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
@@ -175,11 +282,18 @@ export const SimpleEnums = {
 
   toJSON(message: SimpleEnums): unknown {
     const obj: any = {};
-    message.localEnum !== undefined && (obj.localEnum = simpleEnumToJSON(message.localEnum));
-    message.importEnum !== undefined && (obj.importEnum = simpleEnumToJSON5(message.importEnum));
+    if (message.localEnum !== 0) {
+      obj.localEnum = simpleEnumToJSON(message.localEnum);
+    }
+    if (message.importEnum !== 0) {
+      obj.importEnum = simpleEnumToJSON5(message.importEnum);
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<SimpleEnums>, I>>(base?: I): SimpleEnums {
+    return SimpleEnums.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<SimpleEnums>, I>>(object: I): SimpleEnums {
     const message = createBaseSimpleEnums();
     message.localEnum = object.localEnum ?? 0;
@@ -201,19 +315,24 @@ export const FooServiceCreateRequest = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): FooServiceCreateRequest {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseFooServiceCreateRequest();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 8) {
+            break;
+          }
+
           message.kind = reader.int32() as any;
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
@@ -224,10 +343,15 @@ export const FooServiceCreateRequest = {
 
   toJSON(message: FooServiceCreateRequest): unknown {
     const obj: any = {};
-    message.kind !== undefined && (obj.kind = fooServiceToJSON(message.kind));
+    if (message.kind !== 0) {
+      obj.kind = fooServiceToJSON(message.kind);
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<FooServiceCreateRequest>, I>>(base?: I): FooServiceCreateRequest {
+    return FooServiceCreateRequest.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<FooServiceCreateRequest>, I>>(object: I): FooServiceCreateRequest {
     const message = createBaseFooServiceCreateRequest();
     message.kind = object.kind ?? 0;
@@ -248,19 +372,24 @@ export const FooServiceCreateResponse = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): FooServiceCreateResponse {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseFooServiceCreateResponse();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 8) {
+            break;
+          }
+
           message.kind = reader.int32() as any;
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
@@ -271,10 +400,15 @@ export const FooServiceCreateResponse = {
 
   toJSON(message: FooServiceCreateResponse): unknown {
     const obj: any = {};
-    message.kind !== undefined && (obj.kind = fooServiceToJSON(message.kind));
+    if (message.kind !== 0) {
+      obj.kind = fooServiceToJSON(message.kind);
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<FooServiceCreateResponse>, I>>(base?: I): FooServiceCreateResponse {
+    return FooServiceCreateResponse.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<FooServiceCreateResponse>, I>>(object: I): FooServiceCreateResponse {
     const message = createBaseFooServiceCreateResponse();
     message.kind = object.kind ?? 0;
@@ -286,18 +420,19 @@ export interface FooService {
   Create(request: FooServiceCreateRequest): Promise<FooServiceCreateResponse>;
 }
 
+export const FooServiceServiceName = "simple.FooService";
 export class FooServiceClientImpl implements FooService {
   private readonly rpc: Rpc;
   private readonly service: string;
   constructor(rpc: Rpc, opts?: { service?: string }) {
-    this.service = opts?.service || "simple.FooService";
+    this.service = opts?.service || FooServiceServiceName;
     this.rpc = rpc;
     this.Create = this.Create.bind(this);
   }
   Create(request: FooServiceCreateRequest): Promise<FooServiceCreateResponse> {
     const data = FooServiceCreateRequest.encode(request).finish();
     const promise = this.rpc.request(this.service, "Create", data);
-    return promise.then((data) => FooServiceCreateResponse.decode(new _m0.Reader(data)));
+    return promise.then((data) => FooServiceCreateResponse.decode(_m0.Reader.create(data)));
   }
 }
 
@@ -308,7 +443,8 @@ interface Rpc {
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
 export type DeepPartial<T> = T extends Builtin ? T
-  : T extends Array<infer U> ? Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
+  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
   : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
 

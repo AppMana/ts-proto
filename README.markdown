@@ -5,8 +5,6 @@
 
 > `ts-proto` transforms your `.proto` files into strongly-typed, idiomatic TypeScript files!
 
-(Note, if you're a new user of ts-proto and using a modern TS setup with `esModuleInterop`, or want to use ts-proto in ESM / snowpack / vite, you need to also pass that as a `ts_proto_opt`.)
-
 ## Table of contents
 
 - [ts-proto](#ts-proto)
@@ -14,13 +12,14 @@
 - [Overview](#overview)
 - [QuickStart](#quickstart)
   - [Buf](#buf)
+  - [ESM](#esm)
 - [Goals](#goals)
+  - [Non-Goals](#non-goals)
 - [Example Types](#example-types)
 - [Highlights](#highlights)
 - [Auto-Batching / N+1 Prevention](#auto-batching--n1-prevention)
 - [Usage](#usage)
   - [Supported options](#supported-options)
-  - [Only Types](#only-types)
   - [NestJS Support](#nestjs-support)
   - [Watch Mode](#watch-mode)
   - [Basic gRPC implementation](#basic-grpc-implementation)
@@ -79,8 +78,8 @@ It will also generate client implementations of `PingService`; currently [Twirp]
 - `npm install ts-proto`
 - `protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=. ./simple.proto`
   - (Note that the output parameter name, `ts_proto_out`, is named based on the suffix of the plugin's name, i.e. "ts_proto" suffix in the `--plugin=./node_modules/.bin/protoc-gen-ts_proto` parameter becomes the `_out` prefix, per `protoc`'s CLI conventions.)
-  - On Windows, use `protoc --plugin=protoc-gen-ts_proto=.\node_modules\.bin\protoc-gen-ts_proto.cmd --ts_proto_out=. ./simple.proto` (see [#93](https://github.com/stephenh/ts-proto/issues/93))
-  - Ensure you're using a modern `protoc`, i.e. the original `protoc` `3.0.0` doesn't support the `_opt` flag
+  - On Windows, use `protoc --plugin=protoc-gen-ts_proto=".\\node_modules\\.bin\\protoc-gen-ts_proto.cmd" --ts_proto_out=. ./simple.proto` (see [#93](https://github.com/stephenh/ts-proto/issues/93))
+  - Ensure you're using a modern `protoc` (see [installation instructions for your platform](https://grpc.io/docs/protoc-installation/), i.e. `protoc` v`3.0.0` doesn't support the `_opt` flag
 
 This will generate `*.ts` source files for the given `*.proto` types.
 
@@ -111,12 +110,19 @@ You can also use the official plugin published to the Buf Registry.
 ```yaml
 version: v1
 plugins:
-  - remote: buf.build/stephenh/plugins/ts-proto
+  - plugin: buf.build/community/stephenh-ts-proto
     out: ../gen/ts
     opt:
       - outputServices=...
       - useExactTypes=...
 ```
+
+## ESM
+
+If you're using a modern TS setup with either `esModuleInterop` or running in an ESM environment, you'll need to pass `ts_proto_opt`s of:
+
+- `esModuleInterop=true` if using `esModuleInterop` in your `tsconfig.json`, and
+- `importSuffix=.js` if executing the generated ts-proto code in an ESM environment
 
 # Goals
 
@@ -141,6 +147,8 @@ If you'd like an out-of-the-box RPC framework built on top of ts-proto, there ar
 
 (Note for potential contributors, if you develop other frameworks/mini-frameworks, or even blog posts/tutorials, on using `ts-proto`, we're happy to link to them.)
 
+We also don't support clients for `google.api.http`-based [Google Cloud](https://cloud.google.com/endpoints/docs/grpc/transcoding) APIs, see [#948](https://github.com/stephenh/ts-proto/issues/948) if you'd like to submit a PR.
+
 # Example Types
 
 The generated types are "just data", i.e.:
@@ -161,6 +169,10 @@ Along with `encode`/`decode` factory methods:
 
 ```typescript
 export const Simple = {
+  create(baseObject?: DeepPartial<Simple>): Simple {
+    ...
+  },
+
   encode(message: Simple, writer: Writer = Writer.create()): Writer {
     ...
   },
@@ -210,7 +222,7 @@ creating a class and calling the right getters/setters.
 
 - ObjectIds can be mapped as `mongodb.ObjectId`
 
-  (Configurable with the `useObjectId` parameter.)
+  (Configurable with the `useMongoObjectId` parameter.)
 
 # Auto-Batching / N+1 Prevention
 
@@ -279,11 +291,17 @@ Generated code will be placed in the Gradle build directory.
 
 ### Supported options
 
+- With `--ts_proto_opt=globalThisPolyfill=true`, ts-proto will include a polyfill for globalThis.
+
+  Defaults to `false`, i.e. we assume `globalThis` is available.
+
 - With `--ts_proto_opt=context=true`, the services will have a Go-style `ctx` parameter, which is useful for tracing/logging/etc. if you're not using node's `async_hooks` api due to performance reasons.
 
 - With `--ts_proto_opt=forceLong=long`, all 64-bit numbers will be parsed as instances of `Long` (using the [long](https://www.npmjs.com/package/long) library).
 
-  Alternatively, if you pass `--ts_proto_opt=forceLong=string`, all 64-bit numbers will be outputted as strings.
+  With `--ts_proto_opt=forceLong=string`, all 64-bit numbers will be output as strings.
+
+  With `--ts_proto_opt=forceLong=bigint`, all 64-bit numbers will be output as `BigInt`s. This option still uses the `long` library to encode/decode internally within `protobuf.js`, but then converts to/from `BigInt`s in the ts-proto-generated code.
 
   The default behavior is `forceLong=number`, which will internally still use the `long` library to encode/decode values on the wire (so you will still see a `util.Long = Long` line in your output), but will convert the `long` values to `number` automatically for you. Note that a runtime error is thrown if, while doing this conversion, a 64-bit value is larger than can be correctly stored as a `number`.
 
@@ -309,8 +327,8 @@ Generated code will be placed in the Gradle build directory.
 
   ```typescript
   interface SomeMessage {
-    firstName: string | undefined;
-    lastName: string | undefined;
+    firstName: string;
+    lastName: string;
   }
   // Declared with a typo
   const data = { firstName: "a", lastTypo: "b" };
@@ -318,17 +336,17 @@ Generated code will be placed in the Gradle build directory.
   const message: SomeMessage = { ...data };
   ```
 
-  For a consistent API, if `SomeMessage.lastName` is optional `lastName?`, then readers have to check _two_ empty conditions: a) is `lastName` `undefined` (b/c it was created in-memory and left unset), or b) is `lastName` empty string (b/c we read `SomeMessage` off the wire and correctly set `lastName` to empty string)?
+  For a consistent API, if `SomeMessage.lastName` is optional `lastName?`, then readers have to check _two_ empty conditions: a) is `lastName` `undefined` (b/c it was created in-memory and left unset), or b) is `lastName` empty string (b/c we read `SomeMessage` off the wire and, per the proto3 spec, initialized `lastName` to empty string)?
 
   For ensuring proper initialization, if later `SomeMessage.middleInitial` is added, but it's marked as optional `middleInitial?`, you may have many call sites in production code that _should_ now be passing `middleInitial` to create a valid `SomeMessage`, but are not.
 
   So, between typo-prevention, reader inconsistency, and proper initialization, ts-proto recommends using `useOptionals=none` as the "most safe" option.
 
-  All that said, this approach does require writers/creators to set every field (although `fromPartial` is meant to address this), so if you still want to have optional fields, you can set `useOptionals=messages` or `useOptionals=all`.
+  All that said, this approach does require writers/creators to set every field (although `fromPartial` and `create` are meant to address this), so if you still want to have optional keys, you can set `useOptionals=messages` or `useOptionals=all`.
 
   (See [this issue](https://github.com/stephenh/ts-proto/issues/120#issuecomment-678375833) and [this issue](https://github.com/stephenh/ts-proto/issues/397#issuecomment-977259118) for discussions on `useOptional`.)
 
-- With `--ts_proto_opt=exportCommonSymbols=false`, utility types like `DeepPartial` won't be `export`d.
+- With `--ts_proto_opt=exportCommonSymbols=false`, utility types like `DeepPartial` and `protobufPackage` won't be `export`d.
 
   This should make it possible to use create barrel imports of the generated output, i.e. `import * from ./foo` and `import * from ./bar`.
 
@@ -338,7 +356,19 @@ Generated code will be placed in the Gradle build directory.
 
   See the "OneOf Handling" section.
 
-- With `--ts_proto_opt=unrecognizedEnum=false` enums will not contain an `UNRECOGNIZED` key with value of -1.
+- With `--ts_proto_opt=unrecognizedEnumName=<NAME>` enums will contain a key `<NAME>` with value of the `unrecognizedEnumValue` option.
+
+  Defaults to `UNRECOGNIZED`.
+
+- With `--ts_proto_opt=unrecognizedEnumValue=<NUMBER>` enums will contain a key provided by the `unrecognizedEnumName` option with value of `<NUMBER>`.
+
+  Defaults to `-1`.
+
+- With `--ts_proto_opt=unrecognizedEnum=false` enums will not contain an unrecognized enum key and value as provided by the `unrecognizedEnumName` and `unrecognizedEnumValue` options.
+
+- With `--ts_proto_opt=removeEnumPrefix=true` generated enums will have the enum name removed from members.
+
+  `FooBar.FOO_BAR_BAZ = "FOO_BAR_BAZ"` will generate `FooBar.BAZ = "FOO_BAR_BAZ"`
 
 - With `--ts_proto_opt=lowerCaseServiceMethods=true`, the method names of service methods will be lowered/camel-case, i.e. `service.findFoo` instead of `service.FindFoo`.
 
@@ -360,7 +390,11 @@ Generated code will be placed in the Gradle build directory.
 
   This is also useful if you want "only types".
 
-- With `--ts_proto_opt=outputPartialMethods=false`, the `Message.fromPartial` methods for accepting partially-formed objects/object literals will not be output.
+- With `--ts_proto_opt=outputJsonMethods=to-only` and `--ts_proto_opt=outputJsonMethods=from-only` you will be able to export only one between the `Message.toJSON` and `Message.fromJSON` methods.
+
+  This is useful if you're using ts-proto just to `encode` or `decode` and not for both.
+
+- With `--ts_proto_opt=outputPartialMethods=false`, the `Message.fromPartial` and `Message.create` methods for accepting partially-formed objects/object literals will not be output.
 
 - With `--ts_proto_opt=stringEnums=true`, the generated enum types will be string-based instead of int-based.
 
@@ -388,17 +422,19 @@ Generated code will be placed in the Gradle build directory.
 
 - With `--ts_proto_opt=nestJs=true`, the defaults will change to generate [NestJS protobuf](https://docs.nestjs.com/microservices/grpc) friendly types & service interfaces that can be used in both the client-side and server-side of NestJS protobuf implementations. See the [nestjs readme](NESTJS.markdown) for more information and implementation examples.
 
-  Specifically `outputEncodeMethods`, `outputJsonMethods`, and `outputClientImpl` will all be false, and `lowerCaseServiceMethods` will be true.
+  Specifically `outputEncodeMethods`, `outputJsonMethods`, and `outputClientImpl` will all be false, `lowerCaseServiceMethods` will be true and `outputServices` will be ignored.
 
   Note that `addGrpcMetadata`, `addNestjsRestParameter` and `returnObservable` will still be false.
 
 - With `--ts_proto_opt=useDate=false`, fields of type `google.protobuf.Timestamp` will not be mapped to type `Date` in the generated types. See [Timestamp](#timestamp) for more details.
 
-- With `--ts_proto_opt=useObjectId=true`, fields of a type called ObjectId where the message is constructed to have on field called value that is a string will be mapped to type `mongodb.ObjectId` in the generated types. This will require your project to install the mongodb npm package. See [ObjectId](#objectid) for more details.
+- With `--ts_proto_opt=useMongoObjectId=true`, fields of a type called ObjectId where the message is constructed to have on field called value that is a string will be mapped to type `mongodb.ObjectId` in the generated types. This will require your project to install the mongodb npm package. See [ObjectId](#objectid) for more details.
 
 - With `--ts_proto_opt=outputSchema=true`, meta typings will be generated that can later be used in other code generators.
 
-- With `--ts_proto_opt=outputTypeRegistry=true`, the type registry will be generated that can be used to resolve message types by fully-qualified name. Also, each message will get extra `$type` field containing fully-qualified name.
+- With `--ts_proto_opt=outputTypeAnnotations=true`, each message will be given a `$type` field containing its fully-qualified name. You can use `--ts_proto_opt=outputTypeAnnotations=static-only` to omit it from the `interface` declaration.
+
+- With `--ts_proto_opt=outputTypeRegistry=true`, the type registry will be generated that can be used to resolve message types by fully-qualified name. Also, each message will be given a `$type` field containing its fully-qualified name.
 
 - With `--ts_proto_opt=outputServices=grpc-js`, ts-proto will output service definitions and server / client stubs in [grpc-js](https://github.com/grpc/grpc-node/tree/master/packages/grpc-js) format.
 
@@ -412,6 +448,14 @@ Generated code will be placed in the Gradle build directory.
 
 - With `--ts_proto_opt=outputServices=false`, or `=none`, ts-proto will output NO service definitions.
 
+- With `--ts_proto_opt=rpcBeforeRequest=true`, ts-proto will add a function definition to the Rpc interface definition with the signature: `beforeRequest(service: string, message: string, request: <RequestType>)`. It will will also automatically set `outputServices=default`. Each of the Service's methods will call `beforeRequest` before performing it's request.
+
+- With `--ts_proto_opt=rpcAfterResponse=true`, ts-proto will add a function definition to the Rpc interface definition with the signature: `afterResponse(service: string, message: string, response: <ResponseType>)`. It will will also automatically set `outputServices=default`. Each of the Service's methods will call `afterResponse` before returning the response.
+
+- With `--ts_proto_opt=rpcErrorHandler=true`, ts-proto will add a function definition to the Rpc interface definition with the signature: `handleError(service: string, message: string, error: Error)`. It will will also automatically set `outputServices=default`.
+
+- With `--ts_proto_opt=useAbortSignal=true`, the generated services will accept an `AbortSignal` to cancel RPC calls.
+
 - With `--ts_proto_opt=useAsyncIterable=true`, the generated services will use `AsyncIterable` instead of `Observable`.
 
 - With `--ts_proto_opt=emitImportedFiles=false`, ts-proto will not emit `google/protobuf/*` files unless you explicit add files to `protoc` like this
@@ -423,9 +467,9 @@ Generated code will be placed in the Gradle build directory.
 
 - With `--ts_proto_opt=enumsAsLiterals=true`, the generated enum types will be enum-ish object with `as const`.
 
-- With `--ts_proto_opt=useExactTypes=false`, the generated `fromPartial` method will not use Exact types.
+- With `--ts_proto_opt=useExactTypes=false`, the generated `fromPartial` and `create` methods will not use Exact types.
 
-  The default behavior is `useExactTypes=true`, which makes `fromPartial` use Exact type for its argument to make TypeScript reject any unknown properties.
+  The default behavior is `useExactTypes=true`, which makes `fromPartial` and `create` use Exact type for its argument to make TypeScript reject any unknown properties.
 
 - With `--ts_proto_opt=unknownFields=true`, all unknown fields will be parsed and output as arrays of buffers.
 
@@ -441,9 +485,11 @@ Generated code will be placed in the Gradle build directory.
 
   Note that, as indicated, this means Object.keys will not include set-by-default fields, so if you have code that iterates over messages keys in a generic fashion, it will have to also iterate over keys inherited from the prototype.
 
+- With `--ts_proto_opt=useJsonName=true`, `json_name` defined in protofiles will be used instead of message field names.
+
 - With `--ts_proto_opt=useJsonWireFormat=true`, the generated code will reflect the JSON representation of Protobuf messages.
 
-  Requires `onlyTypes=true`. Implies `useDate=string` and `stringEnums=true`. This option is to generate types that can be directly used with marshalling/unmarshalling Protobuf messages serialized as JSON.  
+  Requires `onlyTypes=true`. Implies `useDate=string` and `stringEnums=true`. This option is to generate types that can be directly used with marshalling/unmarshalling Protobuf messages serialized as JSON.
   You may also want to set `useOptionals=all`, as gRPC gateways are not required to send default value for scalar values.
 
 - With `--ts_proto_opt=useNumericEnumForJson=true`, the JSON converter (`toJSON`) will encode enum values as int, rather than a string literal.
@@ -483,6 +529,17 @@ Generated code will be placed in the Gradle build directory.
   ```
 
   by default this is enabled which would generate a type of `Box_Element_Image_Alignment`. By disabling this option the type that is generated would be `BoxElementImageAlignment`.
+
+- With `--ts_proto_opt=outputExtensions=true`, the generated code will include proto2 extensions
+
+  Extension encode/decode methods are compliant with the `outputEncodeMethods` option, and if `unknownFields=true`,
+  the `setExtension` and `getExtension` methods will be created for extendable messages, also compliant with `outputEncodeMethods` (setExtension = encode, getExtension = decode).
+
+- With `--ts_proto_opt=outputIndex=true`, index files will be generated based on the proto package namespaces.
+
+  This will disable `exportCommonSymbols` to avoid name collisions on the common symbols.
+
+- With `--emitDefaultValues=json-methods`, the generated toJSON method will emit scalars like `0` and `""` as json fields.
 
 ### NestJS Support
 
@@ -556,16 +613,16 @@ This section describes how to contribute directly to ts-proto, i.e. it's not req
 
 **Requirements**
 
-- [Docker](https://www.docker.com) or [protoc](https://github.com/protocolbuffers/protobuf/releases) v3.19.1
+- [Docker](https://www.docker.com)
 - `yarn` — `npm install -g yarn`
 
 **Setup**
 
-The commands below assume you have **Docker** installed. To use a **local** copy of `protoc` without docker, use commands suffixed with `:local`. If you are using OS X, install **coreutils**, `brew install coreutils`.
+The commands below assume you have **Docker** installed. If you are using OS X, install **coreutils**, `brew install coreutils`.
 
 - Check out the [repository]() for the latest code.
 - Run `yarn install` to install the dependencies.
-- Run `yarn build:test` or `yarn build:test:local` to generate the test files.
+- Run `yarn build:test` to generate the test files.
   > _This runs the following commands:_
   >
   > - `proto2bin` — Converts integration test `.proto` files to `.bin`.
@@ -575,25 +632,24 @@ The commands below assume you have **Docker** installed. To use a **local** copy
 
 **Workflow**
 
-- Modifying the plugin implementation:
-  - The most important logic is found in [src/main.ts](src/main.ts).
-  - Run `yarn bin2ts` or `yarn bin2ts:local`.  
-    _Since the proto files were not changed, you only need to regenerate the typescript files._
-  - Run `yarn test` to verify the typescript files are compatible with the reference implementation, and pass other tests.
-- Updating or adding `.proto` files in the integration directory:
-  - Run `yarn watch` to automatically regenerate test files when proto files change.
-    - Or run `yarn build:test` to regenerate all integration test files.
-  - Run `yarn test` to retest.
-
-**Contributing**
-
-- Run `yarn build:test` and `yarn test` to make sure everything works.
-- Run `yarn format` to format the typescript files.
-- Commit the changes:
-  - Also include the generated `.bin` files for the tests where you added or modified `.proto` files.
-    > These are checked into git so that the test suite can run without having to invoke the `protoc` build chain.
-  - Also include the generated `.ts` files.
-- Create a pull request
+- Add/update an integration test for your use case
+  - Either find an existing `integration/*` test that is close enough to your use case, e.g. has a `parameters.txt` that matches the `ts_proto_opt` params necessary to reproduce your use case
+  - If creating a new integration test:
+    - Make a new `integration/your-new-test/parameters.txt` with the necessary `ts_proto_opt` params
+    - Create a minimal `integration/your-new-test/your-new-test.proto` schema to reproduce your use case
+  - After any changes to `your-new-test.proto`, or an existing `integration/*.proto` file, run `yarn proto2bin`
+    - You can also leave `yarn watch` running, and it should "just do the right thing"
+  - Add/update a `integration/your-new-test/some-test.ts` unit test, even if it's as trivial as just making sure the generated code compiles
+- Modify the `ts-proto` code generation logic:
+  - Most important logic is found in [src/main.ts](src/main.ts).
+  - After any changes to `src/*.ts` files, run `yarn bin2ts` to re-codegen all integration tests
+    - Or `yarn bin2ts your-new-test` to re-codegen a specific test
+    - Again leaving `yarn watch` running should "just do the right thing"
+- Run `yarn test` to verify your changes pass all existing tests
+- Commit and submit a PR
+  - Run `yarn format` to format the typescript files.
+  - Make sure to `git add` all of the `*.proto`, `*.bin`, and `*.ts` files in `integration/your-new-test`
+    - Sometimes checking in generated code is frowned upon, but given ts-proto's main job is to generate code, seeing the codegen diffs in PRs is helpful
 
 **Dockerized Protoc**
 
@@ -700,25 +756,14 @@ Foo.fromJSON({ bar: "" }); // => { bar: '' }
 Foo.fromJSON({ bar: "baz" }); // => { bar: 'baz' }
 ```
 
-When writing JSON, `ts-proto` currently does **not** normalize message when converting to JSON, other than omitting unset fields, but it may do so in the future.
+When writing JSON, `ts-proto` normalizes messages by omitting unset fields and fields set to their default values.
 
 ```typescript
-// Current ts-proto behavior
-Foo.toJSON({}); // => { }
-Foo.toJSON({ bar: undefined }); // => { }
-Foo.toJSON({ bar: "" }); // => { bar: '' } - note: this is the default value, but it's not omitted
-Foo.toJSON({ bar: "baz" }); // => { bar: 'baz' }
-```
-
-```typescript
-// Possible future behavior, where ts-proto would normalize message
 Foo.toJSON({}); // => { }
 Foo.toJSON({ bar: undefined }); // => { }
 Foo.toJSON({ bar: "" }); // => { } - note: omitting the default value, as expected
 Foo.toJSON({ bar: "baz" }); // => { bar: 'baz' }
 ```
-
-- Please open an issue if you need this behavior.
 
 # Well-Known Types
 
@@ -848,10 +893,13 @@ ExampleMessage.encode({ anything: true });
 ## Timestamp
 
 The representation of `google.protobuf.Timestamp` is configurable by the `useDate` flag.
+The `useJsonTimestamp` flag controls precision when `useDate` is `false`.
 
 | Protobuf well-known type    | Default/`useDate=true` | `useDate=false`                      | `useDate=string` |
 | --------------------------- | ---------------------- | ------------------------------------ | ---------------- |
 | `google.protobuf.Timestamp` | `Date`                 | `{ seconds: number, nanos: number }` | `string`         |
+
+When using `useDate=false` and `useJsonTimestamp=raw` timestamp is represented as `{ seconds: number, nanos: number }`, but has nanosecond precision.
 
 # Number Types
 

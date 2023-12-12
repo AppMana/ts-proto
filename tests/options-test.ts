@@ -2,13 +2,15 @@ import { DateOption, optionsFromParameter, ServiceOption } from "../src/options"
 
 describe("options", () => {
   it("can set outputJsonMethods with nestJs=true", () => {
+    console.log(optionsFromParameter("nestJs=true,outputJsonMethods=true"));
     expect(optionsFromParameter("nestJs=true,outputJsonMethods=true")).toMatchInlineSnapshot(`
-      Object {
-        "M": Object {},
+      {
+        "M": {},
         "addGrpcMetadata": false,
         "addNestjsRestParameter": false,
         "constEnums": false,
         "context": false,
+        "emitDefaultValues": [],
         "emitImportedFiles": true,
         "enumsAsLiterals": false,
         "env": "both",
@@ -16,6 +18,7 @@ describe("options", () => {
         "exportCommonSymbols": true,
         "fileSuffix": "",
         "forceLong": "number",
+        "globalThisPolyfill": false,
         "importSuffix": "",
         "initializeFieldsAsUndefined": false,
         "lowerCaseServiceMethods": true,
@@ -25,24 +28,36 @@ describe("options", () => {
         "onlyTypes": false,
         "outputClientImpl": false,
         "outputEncodeMethods": false,
+        "outputExtensions": false,
+        "outputIndex": false,
         "outputJsonMethods": true,
         "outputPartialMethods": false,
         "outputSchema": false,
-        "outputServices": Array [
+        "outputServices": [
           "default",
         ],
+        "outputTypeAnnotations": false,
         "outputTypeRegistry": false,
+        "removeEnumPrefix": false,
         "returnObservable": false,
-        "snakeToCamel": Array [
+        "rpcAfterResponse": false,
+        "rpcBeforeRequest": false,
+        "rpcErrorHandler": false,
+        "snakeToCamel": [
           "json",
           "keys",
         ],
         "stringEnums": false,
         "unknownFields": false,
         "unrecognizedEnum": true,
+        "unrecognizedEnumName": "UNRECOGNIZED",
+        "unrecognizedEnumValue": -1,
+        "useAbortSignal": false,
         "useAsyncIterable": false,
         "useDate": "timestamp",
         "useExactTypes": true,
+        "useJsonName": false,
+        "useJsonTimestamp": "rfc3339",
         "useJsonWireFormat": false,
         "useMapType": false,
         "useMongoObjectId": false,
@@ -151,6 +166,32 @@ describe("options", () => {
       onlyTypes: true,
       stringEnums: true,
       useDate: DateOption.STRING,
+    });
+  });
+
+  it("rpcAfterResponse implies default service", () => {
+    const options = optionsFromParameter("rpcAfterResponse=true");
+    expect(options).toMatchObject({
+      rpcAfterResponse: true,
+      outputServices: [ServiceOption.DEFAULT],
+    });
+  });
+
+  it("rpcBeforeRequest implies default service", () => {
+    const options = optionsFromParameter("rpcBeforeRequest=true");
+    expect(options).toMatchObject({
+      rpcBeforeRequest: true,
+      outputServices: [ServiceOption.DEFAULT],
+    });
+  });
+
+  it("rpcAfterResponse implies default service but allows generics too", () => {
+    const options = optionsFromParameter(
+      "rpcBeforeRequest=true,outputServices=generic-definitions,outputServices=default",
+    );
+    expect(options).toMatchObject({
+      rpcBeforeRequest: true,
+      outputServices: [ServiceOption.DEFAULT, ServiceOption.GENERIC],
     });
   });
 });

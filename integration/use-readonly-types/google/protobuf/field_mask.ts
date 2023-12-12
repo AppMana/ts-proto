@@ -221,19 +221,24 @@ export const FieldMask = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): FieldMask {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseFieldMask() as any;
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 10) {
+            break;
+          }
+
           message.paths.push(reader.string());
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
@@ -241,9 +246,9 @@ export const FieldMask = {
   fromJSON(object: any): FieldMask {
     return {
       paths: typeof (object) === "string"
-        ? object.split(",").filter(Boolean)
-        : Array.isArray(object?.paths)
-        ? object.paths.map(String)
+        ? object.split(",").filter(globalThis.Boolean)
+        : globalThis.Array.isArray(object?.paths)
+        ? object.paths.map(globalThis.String)
         : [],
     };
   },
@@ -252,6 +257,9 @@ export const FieldMask = {
     return message.paths.join(",");
   },
 
+  create<I extends Exact<DeepPartial<FieldMask>, I>>(base?: I): FieldMask {
+    return FieldMask.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<FieldMask>, I>>(object: I): FieldMask {
     const message = createBaseFieldMask() as any;
     message.paths = object.paths?.map((e) => e) || [];
@@ -260,9 +268,7 @@ export const FieldMask = {
 
   wrap(paths: readonly string[]): FieldMask {
     const result = createBaseFieldMask() as any;
-
     result.paths = paths;
-
     return result;
   },
 
@@ -274,7 +280,8 @@ export const FieldMask = {
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
 export type DeepPartial<T> = T extends Builtin ? T
-  : T extends Array<infer U> ? Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
+  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
   : T extends { readonly $case: string }
     ? { [K in keyof Omit<T, "$case">]?: DeepPartial<T[K]> } & { readonly $case: T["$case"] }
   : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }

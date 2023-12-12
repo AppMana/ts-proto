@@ -53,45 +53,67 @@ export const DateMessage = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): DateMessage {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseDateMessage();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 8) {
+            break;
+          }
+
           message.year = reader.int32();
-          break;
+          continue;
         case 2:
+          if (tag !== 16) {
+            break;
+          }
+
           message.month = reader.int32();
-          break;
+          continue;
         case 3:
+          if (tag !== 24) {
+            break;
+          }
+
           message.day = reader.int32();
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): DateMessage {
     return {
-      year: isSet(object.year) ? Number(object.year) : 0,
-      month: isSet(object.month) ? Number(object.month) : 0,
-      day: isSet(object.day) ? Number(object.day) : 0,
+      year: isSet(object.year) ? globalThis.Number(object.year) : 0,
+      month: isSet(object.month) ? globalThis.Number(object.month) : 0,
+      day: isSet(object.day) ? globalThis.Number(object.day) : 0,
     };
   },
 
   toJSON(message: DateMessage): unknown {
     const obj: any = {};
-    message.year !== undefined && (obj.year = Math.round(message.year));
-    message.month !== undefined && (obj.month = Math.round(message.month));
-    message.day !== undefined && (obj.day = Math.round(message.day));
+    if (message.year !== 0) {
+      obj.year = Math.round(message.year);
+    }
+    if (message.month !== 0) {
+      obj.month = Math.round(message.month);
+    }
+    if (message.day !== 0) {
+      obj.day = Math.round(message.day);
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<DateMessage>, I>>(base?: I): DateMessage {
+    return DateMessage.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<DateMessage>, I>>(object: I): DateMessage {
     const message = createBaseDateMessage();
     message.year = object.year ?? 0;
@@ -104,7 +126,8 @@ export const DateMessage = {
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
 export type DeepPartial<T> = T extends Builtin ? T
-  : T extends Array<infer U> ? Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
+  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
   : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
 

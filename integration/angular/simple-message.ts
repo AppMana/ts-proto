@@ -20,33 +20,43 @@ export const SimpleMessage = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): SimpleMessage {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseSimpleMessage();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 8) {
+            break;
+          }
+
           message.numberField = reader.int32();
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): SimpleMessage {
-    return { numberField: isSet(object.numberField) ? Number(object.numberField) : 0 };
+    return { numberField: isSet(object.numberField) ? globalThis.Number(object.numberField) : 0 };
   },
 
   toJSON(message: SimpleMessage): unknown {
     const obj: any = {};
-    message.numberField !== undefined && (obj.numberField = Math.round(message.numberField));
+    if (message.numberField !== 0) {
+      obj.numberField = Math.round(message.numberField);
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<SimpleMessage>, I>>(base?: I): SimpleMessage {
+    return SimpleMessage.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<SimpleMessage>, I>>(object: I): SimpleMessage {
     const message = createBaseSimpleMessage();
     message.numberField = object.numberField ?? 0;
@@ -57,7 +67,8 @@ export const SimpleMessage = {
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
 export type DeepPartial<T> = T extends Builtin ? T
-  : T extends Array<infer U> ? Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
+  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
   : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
 

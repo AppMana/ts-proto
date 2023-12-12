@@ -1,5 +1,5 @@
 /* eslint-disable */
-import * as Long from "long";
+import Long = require("long");
 import * as _m0 from "protobufjs/minimal";
 import { BoolValue, Int32Value, Int64Value, StringValue } from "./google/protobuf/wrappers";
 
@@ -17,8 +17,7 @@ export interface SimpleWithWrappers {
 export interface SimpleWithMap {
   nameLookup: { [key: string]: string };
   intLookup: { [key: number]: number };
-  /** Ideally we'd test map<int64, int64> but we present maps as JS objects and `Long` cannot be used as a keys. */
-  longLookup: { [key: string]: Long };
+  longLookup: Map<Long, Long>;
 }
 
 export interface SimpleWithMap_NameLookupEntry {
@@ -32,7 +31,7 @@ export interface SimpleWithMap_IntLookupEntry {
 }
 
 export interface SimpleWithMap_LongLookupEntry {
-  key: string;
+  key: Long;
   value: Long;
 }
 
@@ -81,34 +80,59 @@ export const SimpleWithWrappers = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): SimpleWithWrappers {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseSimpleWithWrappers();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 10) {
+            break;
+          }
+
           message.name = StringValue.decode(reader, reader.uint32()).value;
-          break;
+          continue;
         case 2:
+          if (tag !== 18) {
+            break;
+          }
+
           message.age = Int32Value.decode(reader, reader.uint32()).value;
-          break;
+          continue;
         case 3:
+          if (tag !== 26) {
+            break;
+          }
+
           message.enabled = BoolValue.decode(reader, reader.uint32()).value;
-          break;
+          continue;
         case 4:
+          if (tag !== 34) {
+            break;
+          }
+
           message.bananas = Int64Value.decode(reader, reader.uint32()).value;
-          break;
+          continue;
         case 6:
+          if (tag !== 50) {
+            break;
+          }
+
           message.coins.push(Int32Value.decode(reader, reader.uint32()).value);
-          break;
+          continue;
         case 7:
+          if (tag !== 58) {
+            break;
+          }
+
           message.snacks.push(StringValue.decode(reader, reader.uint32()).value);
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
@@ -119,30 +143,37 @@ export const SimpleWithWrappers = {
       age: isSet(object.age) ? Number(object.age) : undefined,
       enabled: isSet(object.enabled) ? Boolean(object.enabled) : undefined,
       bananas: isSet(object.bananas) ? Long.fromValue(object.bananas) : undefined,
-      coins: Array.isArray(object?.coins) ? object.coins.map((e: any) => Number(e)) : [],
-      snacks: Array.isArray(object?.snacks) ? object.snacks.map((e: any) => String(e)) : [],
+      coins: globalThis.Array.isArray(object?.coins) ? object.coins.map((e: any) => Number(e)) : [],
+      snacks: globalThis.Array.isArray(object?.snacks) ? object.snacks.map((e: any) => String(e)) : [],
     };
   },
 
   toJSON(message: SimpleWithWrappers): unknown {
     const obj: any = {};
-    message.name !== undefined && (obj.name = message.name);
-    message.age !== undefined && (obj.age = message.age);
-    message.enabled !== undefined && (obj.enabled = message.enabled);
-    message.bananas !== undefined && (obj.bananas = message.bananas);
-    if (message.coins) {
-      obj.coins = message.coins.map((e) => e);
-    } else {
-      obj.coins = [];
+    if (message.name !== undefined) {
+      obj.name = message.name;
     }
-    if (message.snacks) {
-      obj.snacks = message.snacks.map((e) => e);
-    } else {
-      obj.snacks = [];
+    if (message.age !== undefined) {
+      obj.age = message.age;
+    }
+    if (message.enabled !== undefined) {
+      obj.enabled = message.enabled;
+    }
+    if (message.bananas !== undefined) {
+      obj.bananas = message.bananas;
+    }
+    if (message.coins?.length) {
+      obj.coins = message.coins;
+    }
+    if (message.snacks?.length) {
+      obj.snacks = message.snacks;
     }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<SimpleWithWrappers>, I>>(base?: I): SimpleWithWrappers {
+    return SimpleWithWrappers.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<SimpleWithWrappers>, I>>(object: I): SimpleWithWrappers {
     const message = createBaseSimpleWithWrappers();
     message.name = object.name ?? undefined;
@@ -158,7 +189,7 @@ export const SimpleWithWrappers = {
 };
 
 function createBaseSimpleWithMap(): SimpleWithMap {
-  return { nameLookup: {}, intLookup: {}, longLookup: {} };
+  return { nameLookup: {}, intLookup: {}, longLookup: new Map() };
 }
 
 export const SimpleWithMap = {
@@ -169,41 +200,54 @@ export const SimpleWithMap = {
     Object.entries(message.intLookup).forEach(([key, value]) => {
       SimpleWithMap_IntLookupEntry.encode({ key: key as any, value }, writer.uint32(26).fork()).ldelim();
     });
-    Object.entries(message.longLookup).forEach(([key, value]) => {
+    (message.longLookup).forEach((value, key) => {
       SimpleWithMap_LongLookupEntry.encode({ key: key as any, value }, writer.uint32(34).fork()).ldelim();
     });
     return writer;
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): SimpleWithMap {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseSimpleWithMap();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 2:
+          if (tag !== 18) {
+            break;
+          }
+
           const entry2 = SimpleWithMap_NameLookupEntry.decode(reader, reader.uint32());
           if (entry2.value !== undefined) {
             message.nameLookup[entry2.key] = entry2.value;
           }
-          break;
+          continue;
         case 3:
+          if (tag !== 26) {
+            break;
+          }
+
           const entry3 = SimpleWithMap_IntLookupEntry.decode(reader, reader.uint32());
           if (entry3.value !== undefined) {
             message.intLookup[entry3.key] = entry3.value;
           }
-          break;
+          continue;
         case 4:
+          if (tag !== 34) {
+            break;
+          }
+
           const entry4 = SimpleWithMap_LongLookupEntry.decode(reader, reader.uint32());
           if (entry4.value !== undefined) {
-            message.longLookup[entry4.key] = entry4.value;
+            message.longLookup.set(entry4.key, entry4.value);
           }
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
@@ -218,48 +262,57 @@ export const SimpleWithMap = {
         : {},
       intLookup: isObject(object.intLookup)
         ? Object.entries(object.intLookup).reduce<{ [key: number]: number }>((acc, [key, value]) => {
-          acc[Number(key)] = Number(value);
+          acc[globalThis.Number(key)] = Number(value);
           return acc;
         }, {})
         : {},
       longLookup: isObject(object.longLookup)
-        ? Object.entries(object.longLookup).reduce<{ [key: string]: Long }>((acc, [key, value]) => {
-          acc[key] = Long.fromValue(value as Long | string);
+        ? Object.entries(object.longLookup).reduce<Map<Long, Long>>((acc, [key, value]) => {
+          acc.set(Long.fromValue(key), Long.fromValue(value as Long | string));
           return acc;
-        }, {})
-        : {},
+        }, new Map())
+        : new Map(),
     };
   },
 
   toJSON(message: SimpleWithMap): unknown {
     const obj: any = {};
-    obj.nameLookup = {};
     if (message.nameLookup) {
-      Object.entries(message.nameLookup).forEach(([k, v]) => {
-        obj.nameLookup[k] = v;
-      });
+      const entries = Object.entries(message.nameLookup);
+      if (entries.length > 0) {
+        obj.nameLookup = {};
+        entries.forEach(([k, v]) => {
+          obj.nameLookup[k] = v;
+        });
+      }
     }
-    obj.intLookup = {};
     if (message.intLookup) {
-      Object.entries(message.intLookup).forEach(([k, v]) => {
-        obj.intLookup[k] = Math.round(v);
-      });
+      const entries = Object.entries(message.intLookup);
+      if (entries.length > 0) {
+        obj.intLookup = {};
+        entries.forEach(([k, v]) => {
+          obj.intLookup[k] = Math.round(v);
+        });
+      }
     }
-    obj.longLookup = {};
-    if (message.longLookup) {
-      Object.entries(message.longLookup).forEach(([k, v]) => {
-        obj.longLookup[k] = v.toString();
+    if (message.longLookup?.size) {
+      obj.longLookup = {};
+      message.longLookup.forEach((v, k) => {
+        obj.longLookup[longToNumber(k)] = v.toString();
       });
     }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<SimpleWithMap>, I>>(base?: I): SimpleWithMap {
+    return SimpleWithMap.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<SimpleWithMap>, I>>(object: I): SimpleWithMap {
     const message = createBaseSimpleWithMap();
     message.nameLookup = Object.entries(object.nameLookup ?? {}).reduce<{ [key: string]: string }>(
       (acc, [key, value]) => {
         if (value !== undefined) {
-          acc[key] = String(value);
+          acc[key] = globalThis.String(value);
         }
         return acc;
       },
@@ -268,21 +321,21 @@ export const SimpleWithMap = {
     message.intLookup = Object.entries(object.intLookup ?? {}).reduce<{ [key: number]: number }>(
       (acc, [key, value]) => {
         if (value !== undefined) {
-          acc[Number(key)] = Number(value);
+          acc[globalThis.Number(key)] = globalThis.Number(value);
         }
         return acc;
       },
       {},
     );
-    message.longLookup = Object.entries(object.longLookup ?? {}).reduce<{ [key: string]: Long }>(
-      (acc, [key, value]) => {
+    message.longLookup = (() => {
+      const m = new Map();
+      (object.longLookup as Map<Long, Long> ?? new Map()).forEach((value, key) => {
         if (value !== undefined) {
-          acc[key] = Long.fromValue(value);
+          m.set(key, Long.fromValue(value));
         }
-        return acc;
-      },
-      {},
-    );
+      });
+      return m;
+    })();
     return message;
   },
 };
@@ -303,37 +356,56 @@ export const SimpleWithMap_NameLookupEntry = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): SimpleWithMap_NameLookupEntry {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseSimpleWithMap_NameLookupEntry();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 10) {
+            break;
+          }
+
           message.key = reader.string();
-          break;
+          continue;
         case 2:
+          if (tag !== 18) {
+            break;
+          }
+
           message.value = reader.string();
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): SimpleWithMap_NameLookupEntry {
-    return { key: isSet(object.key) ? String(object.key) : "", value: isSet(object.value) ? String(object.value) : "" };
+    return {
+      key: isSet(object.key) ? globalThis.String(object.key) : "",
+      value: isSet(object.value) ? globalThis.String(object.value) : "",
+    };
   },
 
   toJSON(message: SimpleWithMap_NameLookupEntry): unknown {
     const obj: any = {};
-    message.key !== undefined && (obj.key = message.key);
-    message.value !== undefined && (obj.value = message.value);
+    if (message.key !== "") {
+      obj.key = message.key;
+    }
+    if (message.value !== "") {
+      obj.value = message.value;
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<SimpleWithMap_NameLookupEntry>, I>>(base?: I): SimpleWithMap_NameLookupEntry {
+    return SimpleWithMap_NameLookupEntry.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<SimpleWithMap_NameLookupEntry>, I>>(
     object: I,
   ): SimpleWithMap_NameLookupEntry {
@@ -360,37 +432,56 @@ export const SimpleWithMap_IntLookupEntry = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): SimpleWithMap_IntLookupEntry {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseSimpleWithMap_IntLookupEntry();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 8) {
+            break;
+          }
+
           message.key = reader.int32();
-          break;
+          continue;
         case 2:
+          if (tag !== 16) {
+            break;
+          }
+
           message.value = reader.int32();
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): SimpleWithMap_IntLookupEntry {
-    return { key: isSet(object.key) ? Number(object.key) : 0, value: isSet(object.value) ? Number(object.value) : 0 };
+    return {
+      key: isSet(object.key) ? globalThis.Number(object.key) : 0,
+      value: isSet(object.value) ? globalThis.Number(object.value) : 0,
+    };
   },
 
   toJSON(message: SimpleWithMap_IntLookupEntry): unknown {
     const obj: any = {};
-    message.key !== undefined && (obj.key = Math.round(message.key));
-    message.value !== undefined && (obj.value = Math.round(message.value));
+    if (message.key !== 0) {
+      obj.key = Math.round(message.key);
+    }
+    if (message.value !== 0) {
+      obj.value = Math.round(message.value);
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<SimpleWithMap_IntLookupEntry>, I>>(base?: I): SimpleWithMap_IntLookupEntry {
+    return SimpleWithMap_IntLookupEntry.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<SimpleWithMap_IntLookupEntry>, I>>(object: I): SimpleWithMap_IntLookupEntry {
     const message = createBaseSimpleWithMap_IntLookupEntry();
     message.key = object.key ?? 0;
@@ -400,13 +491,13 @@ export const SimpleWithMap_IntLookupEntry = {
 };
 
 function createBaseSimpleWithMap_LongLookupEntry(): SimpleWithMap_LongLookupEntry {
-  return { key: "", value: Long.ZERO };
+  return { key: Long.ZERO, value: Long.ZERO };
 }
 
 export const SimpleWithMap_LongLookupEntry = {
   encode(message: SimpleWithMap_LongLookupEntry, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.key !== "") {
-      writer.uint32(10).string(message.key);
+    if (!message.key.isZero()) {
+      writer.uint32(8).int64(message.key);
     }
     if (!message.value.isZero()) {
       writer.uint32(16).int64(message.value);
@@ -415,45 +506,61 @@ export const SimpleWithMap_LongLookupEntry = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): SimpleWithMap_LongLookupEntry {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseSimpleWithMap_LongLookupEntry();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          message.key = reader.string();
-          break;
+          if (tag !== 8) {
+            break;
+          }
+
+          message.key = reader.int64() as Long;
+          continue;
         case 2:
+          if (tag !== 16) {
+            break;
+          }
+
           message.value = reader.int64() as Long;
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): SimpleWithMap_LongLookupEntry {
     return {
-      key: isSet(object.key) ? String(object.key) : "",
+      key: isSet(object.key) ? Long.fromValue(object.key) : Long.ZERO,
       value: isSet(object.value) ? Long.fromValue(object.value) : Long.ZERO,
     };
   },
 
   toJSON(message: SimpleWithMap_LongLookupEntry): unknown {
     const obj: any = {};
-    message.key !== undefined && (obj.key = message.key);
-    message.value !== undefined && (obj.value = (message.value || Long.ZERO).toString());
+    if (!message.key.isZero()) {
+      obj.key = (message.key || Long.ZERO).toString();
+    }
+    if (!message.value.isZero()) {
+      obj.value = (message.value || Long.ZERO).toString();
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<SimpleWithMap_LongLookupEntry>, I>>(base?: I): SimpleWithMap_LongLookupEntry {
+    return SimpleWithMap_LongLookupEntry.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<SimpleWithMap_LongLookupEntry>, I>>(
     object: I,
   ): SimpleWithMap_LongLookupEntry {
     const message = createBaseSimpleWithMap_LongLookupEntry();
-    message.key = object.key ?? "";
+    message.key = (object.key !== undefined && object.key !== null) ? Long.fromValue(object.key) : Long.ZERO;
     message.value = (object.value !== undefined && object.value !== null) ? Long.fromValue(object.value) : Long.ZERO;
     return message;
   },
@@ -524,106 +631,189 @@ export const Numbers = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): Numbers {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseNumbers();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 9) {
+            break;
+          }
+
           message.double = reader.double();
-          break;
+          continue;
         case 2:
+          if (tag !== 21) {
+            break;
+          }
+
           message.float = reader.float();
-          break;
+          continue;
         case 3:
+          if (tag !== 24) {
+            break;
+          }
+
           message.int32 = reader.int32();
-          break;
+          continue;
         case 4:
+          if (tag !== 32) {
+            break;
+          }
+
           message.int64 = reader.int64() as Long;
-          break;
+          continue;
         case 5:
+          if (tag !== 40) {
+            break;
+          }
+
           message.uint32 = reader.uint32();
-          break;
+          continue;
         case 6:
+          if (tag !== 48) {
+            break;
+          }
+
           message.uint64 = reader.uint64() as Long;
-          break;
+          continue;
         case 7:
+          if (tag !== 56) {
+            break;
+          }
+
           message.sint32 = reader.sint32();
-          break;
+          continue;
         case 8:
+          if (tag !== 64) {
+            break;
+          }
+
           message.sint64 = reader.sint64() as Long;
-          break;
+          continue;
         case 9:
+          if (tag !== 77) {
+            break;
+          }
+
           message.fixed32 = reader.fixed32();
-          break;
+          continue;
         case 10:
+          if (tag !== 81) {
+            break;
+          }
+
           message.fixed64 = reader.fixed64() as Long;
-          break;
+          continue;
         case 11:
+          if (tag !== 93) {
+            break;
+          }
+
           message.sfixed32 = reader.sfixed32();
-          break;
+          continue;
         case 12:
+          if (tag !== 97) {
+            break;
+          }
+
           message.sfixed64 = reader.sfixed64() as Long;
-          break;
+          continue;
         case 13:
-          if ((tag & 7) === 2) {
+          if (tag === 104) {
+            message.manyUint64.push(reader.uint64() as Long);
+
+            continue;
+          }
+
+          if (tag === 106) {
             const end2 = reader.uint32() + reader.pos;
             while (reader.pos < end2) {
               message.manyUint64.push(reader.uint64() as Long);
             }
-          } else {
-            message.manyUint64.push(reader.uint64() as Long);
+
+            continue;
           }
-          break;
-        default:
-          reader.skipType(tag & 7);
+
           break;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): Numbers {
     return {
-      double: isSet(object.double) ? Number(object.double) : 0,
-      float: isSet(object.float) ? Number(object.float) : 0,
-      int32: isSet(object.int32) ? Number(object.int32) : 0,
+      double: isSet(object.double) ? globalThis.Number(object.double) : 0,
+      float: isSet(object.float) ? globalThis.Number(object.float) : 0,
+      int32: isSet(object.int32) ? globalThis.Number(object.int32) : 0,
       int64: isSet(object.int64) ? Long.fromValue(object.int64) : Long.ZERO,
-      uint32: isSet(object.uint32) ? Number(object.uint32) : 0,
+      uint32: isSet(object.uint32) ? globalThis.Number(object.uint32) : 0,
       uint64: isSet(object.uint64) ? Long.fromValue(object.uint64) : Long.UZERO,
-      sint32: isSet(object.sint32) ? Number(object.sint32) : 0,
+      sint32: isSet(object.sint32) ? globalThis.Number(object.sint32) : 0,
       sint64: isSet(object.sint64) ? Long.fromValue(object.sint64) : Long.ZERO,
-      fixed32: isSet(object.fixed32) ? Number(object.fixed32) : 0,
+      fixed32: isSet(object.fixed32) ? globalThis.Number(object.fixed32) : 0,
       fixed64: isSet(object.fixed64) ? Long.fromValue(object.fixed64) : Long.UZERO,
-      sfixed32: isSet(object.sfixed32) ? Number(object.sfixed32) : 0,
+      sfixed32: isSet(object.sfixed32) ? globalThis.Number(object.sfixed32) : 0,
       sfixed64: isSet(object.sfixed64) ? Long.fromValue(object.sfixed64) : Long.ZERO,
-      manyUint64: Array.isArray(object?.manyUint64) ? object.manyUint64.map((e: any) => Long.fromValue(e)) : [],
+      manyUint64: globalThis.Array.isArray(object?.manyUint64)
+        ? object.manyUint64.map((e: any) => Long.fromValue(e))
+        : [],
     };
   },
 
   toJSON(message: Numbers): unknown {
     const obj: any = {};
-    message.double !== undefined && (obj.double = message.double);
-    message.float !== undefined && (obj.float = message.float);
-    message.int32 !== undefined && (obj.int32 = Math.round(message.int32));
-    message.int64 !== undefined && (obj.int64 = (message.int64 || Long.ZERO).toString());
-    message.uint32 !== undefined && (obj.uint32 = Math.round(message.uint32));
-    message.uint64 !== undefined && (obj.uint64 = (message.uint64 || Long.UZERO).toString());
-    message.sint32 !== undefined && (obj.sint32 = Math.round(message.sint32));
-    message.sint64 !== undefined && (obj.sint64 = (message.sint64 || Long.ZERO).toString());
-    message.fixed32 !== undefined && (obj.fixed32 = Math.round(message.fixed32));
-    message.fixed64 !== undefined && (obj.fixed64 = (message.fixed64 || Long.UZERO).toString());
-    message.sfixed32 !== undefined && (obj.sfixed32 = Math.round(message.sfixed32));
-    message.sfixed64 !== undefined && (obj.sfixed64 = (message.sfixed64 || Long.ZERO).toString());
-    if (message.manyUint64) {
+    if (message.double !== 0) {
+      obj.double = message.double;
+    }
+    if (message.float !== 0) {
+      obj.float = message.float;
+    }
+    if (message.int32 !== 0) {
+      obj.int32 = Math.round(message.int32);
+    }
+    if (!message.int64.isZero()) {
+      obj.int64 = (message.int64 || Long.ZERO).toString();
+    }
+    if (message.uint32 !== 0) {
+      obj.uint32 = Math.round(message.uint32);
+    }
+    if (!message.uint64.isZero()) {
+      obj.uint64 = (message.uint64 || Long.UZERO).toString();
+    }
+    if (message.sint32 !== 0) {
+      obj.sint32 = Math.round(message.sint32);
+    }
+    if (!message.sint64.isZero()) {
+      obj.sint64 = (message.sint64 || Long.ZERO).toString();
+    }
+    if (message.fixed32 !== 0) {
+      obj.fixed32 = Math.round(message.fixed32);
+    }
+    if (!message.fixed64.isZero()) {
+      obj.fixed64 = (message.fixed64 || Long.UZERO).toString();
+    }
+    if (message.sfixed32 !== 0) {
+      obj.sfixed32 = Math.round(message.sfixed32);
+    }
+    if (!message.sfixed64.isZero()) {
+      obj.sfixed64 = (message.sfixed64 || Long.ZERO).toString();
+    }
+    if (message.manyUint64?.length) {
       obj.manyUint64 = message.manyUint64.map((e) => (e || Long.UZERO).toString());
-    } else {
-      obj.manyUint64 = [];
     }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<Numbers>, I>>(base?: I): Numbers {
+    return Numbers.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<Numbers>, I>>(object: I): Numbers {
     const message = createBaseNumbers();
     message.double = object.double ?? 0;
@@ -654,7 +844,7 @@ export const Numbers = {
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
 export type DeepPartial<T> = T extends Builtin ? T
-  : T extends Long ? string | number | Long : T extends Array<infer U> ? Array<DeepPartial<U>>
+  : T extends Long ? string | number | Long : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
   : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
   : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
@@ -663,8 +853,13 @@ type KeysOfUnion<T> = T extends T ? keyof T : never;
 export type Exact<P, I extends P> = P extends Builtin ? P
   : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
 
-// If you get a compile-error about 'Constructor<Long> and ... have no overlap',
-// add '--ts_proto_opt=esModuleInterop=true' as a flag when calling 'protoc'.
+function longToNumber(long: Long): number {
+  if (long.gt(globalThis.Number.MAX_SAFE_INTEGER)) {
+    throw new globalThis.Error("Value is larger than Number.MAX_SAFE_INTEGER");
+  }
+  return long.toNumber();
+}
+
 if (_m0.util.Long !== Long) {
   _m0.util.Long = Long as any;
   _m0.configure();

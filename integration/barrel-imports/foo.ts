@@ -23,40 +23,56 @@ export const Foo = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): Foo {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseFoo();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 10) {
+            break;
+          }
+
           message.name = reader.string();
-          break;
+          continue;
         case 2:
+          if (tag !== 18) {
+            break;
+          }
+
           message.bar = Bar.decode(reader, reader.uint32());
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): Foo {
     return {
-      name: isSet(object.name) ? String(object.name) : "",
+      name: isSet(object.name) ? globalThis.String(object.name) : "",
       bar: isSet(object.bar) ? Bar.fromJSON(object.bar) : undefined,
     };
   },
 
   toJSON(message: Foo): unknown {
     const obj: any = {};
-    message.name !== undefined && (obj.name = message.name);
-    message.bar !== undefined && (obj.bar = message.bar ? Bar.toJSON(message.bar) : undefined);
+    if (message.name !== "") {
+      obj.name = message.name;
+    }
+    if (message.bar !== undefined) {
+      obj.bar = Bar.toJSON(message.bar);
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<Foo>, I>>(base?: I): Foo {
+    return Foo.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<Foo>, I>>(object: I): Foo {
     const message = createBaseFoo();
     message.name = object.name ?? "";
@@ -68,7 +84,8 @@ export const Foo = {
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
 type DeepPartial<T> = T extends Builtin ? T
-  : T extends Array<infer U> ? Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
+  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
   : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
 

@@ -53,19 +53,24 @@ export const Issue56 = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): Issue56 {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseIssue56();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 8) {
+            break;
+          }
+
           message.test = reader.int32() as any;
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
@@ -76,10 +81,15 @@ export const Issue56 = {
 
   toJSON(message: Issue56): unknown {
     const obj: any = {};
-    message.test !== undefined && (obj.test = enumWithoutZeroToJSON(message.test));
+    if (message.test !== 1) {
+      obj.test = enumWithoutZeroToJSON(message.test);
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<Issue56>, I>>(base?: I): Issue56 {
+    return Issue56.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<Issue56>, I>>(object: I): Issue56 {
     const message = createBaseIssue56();
     message.test = object.test ?? 1;
@@ -90,7 +100,8 @@ export const Issue56 = {
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
 export type DeepPartial<T> = T extends Builtin ? T
-  : T extends Array<infer U> ? Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
+  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
   : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
 

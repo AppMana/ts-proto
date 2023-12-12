@@ -43,43 +43,64 @@ export const Todo = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): Todo {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseTodo();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 10) {
+            break;
+          }
+
           message.id = reader.string();
-          break;
+          continue;
         case 2:
+          if (tag !== 18) {
+            break;
+          }
+
           message.timestamp = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
-          break;
+          continue;
         case 3:
+          if (tag !== 26) {
+            break;
+          }
+
           message.repeatedTimestamp.push(fromTimestamp(Timestamp.decode(reader, reader.uint32())));
-          break;
+          continue;
         case 4:
+          if (tag !== 34) {
+            break;
+          }
+
           message.optionalTimestamp = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
-          break;
+          continue;
         case 5:
+          if (tag !== 42) {
+            break;
+          }
+
           const entry5 = Todo_MapOfTimestampsEntry.decode(reader, reader.uint32());
           if (entry5.value !== undefined) {
             message.mapOfTimestamps[entry5.key] = entry5.value;
           }
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): Todo {
     return {
-      id: isSet(object.id) ? String(object.id) : "",
+      id: isSet(object.id) ? globalThis.String(object.id) : "",
       timestamp: isSet(object.timestamp) ? fromJsonTimestamp(object.timestamp) : undefined,
-      repeatedTimestamp: Array.isArray(object?.repeatedTimestamp)
+      repeatedTimestamp: globalThis.Array.isArray(object?.repeatedTimestamp)
         ? object.repeatedTimestamp.map((e: any) => fromJsonTimestamp(e))
         : [],
       optionalTimestamp: isSet(object.optionalTimestamp) ? fromJsonTimestamp(object.optionalTimestamp) : undefined,
@@ -94,23 +115,33 @@ export const Todo = {
 
   toJSON(message: Todo): unknown {
     const obj: any = {};
-    message.id !== undefined && (obj.id = message.id);
-    message.timestamp !== undefined && (obj.timestamp = message.timestamp.toISOString());
-    if (message.repeatedTimestamp) {
-      obj.repeatedTimestamp = message.repeatedTimestamp.map((e) => e.toISOString());
-    } else {
-      obj.repeatedTimestamp = [];
+    if (message.id !== "") {
+      obj.id = message.id;
     }
-    message.optionalTimestamp !== undefined && (obj.optionalTimestamp = message.optionalTimestamp.toISOString());
-    obj.mapOfTimestamps = {};
+    if (message.timestamp !== undefined) {
+      obj.timestamp = message.timestamp.toISOString();
+    }
+    if (message.repeatedTimestamp?.length) {
+      obj.repeatedTimestamp = message.repeatedTimestamp.map((e) => e.toISOString());
+    }
+    if (message.optionalTimestamp !== undefined) {
+      obj.optionalTimestamp = message.optionalTimestamp.toISOString();
+    }
     if (message.mapOfTimestamps) {
-      Object.entries(message.mapOfTimestamps).forEach(([k, v]) => {
-        obj.mapOfTimestamps[k] = v.toISOString();
-      });
+      const entries = Object.entries(message.mapOfTimestamps);
+      if (entries.length > 0) {
+        obj.mapOfTimestamps = {};
+        entries.forEach(([k, v]) => {
+          obj.mapOfTimestamps[k] = v.toISOString();
+        });
+      }
     }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<Todo>, I>>(base?: I): Todo {
+    return Todo.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<Todo>, I>>(object: I): Todo {
     const message = createBaseTodo();
     message.id = object.id ?? "";
@@ -146,40 +177,56 @@ export const Todo_MapOfTimestampsEntry = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): Todo_MapOfTimestampsEntry {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseTodo_MapOfTimestampsEntry();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 10) {
+            break;
+          }
+
           message.key = reader.string();
-          break;
+          continue;
         case 2:
+          if (tag !== 18) {
+            break;
+          }
+
           message.value = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): Todo_MapOfTimestampsEntry {
     return {
-      key: isSet(object.key) ? String(object.key) : "",
+      key: isSet(object.key) ? globalThis.String(object.key) : "",
       value: isSet(object.value) ? fromJsonTimestamp(object.value) : undefined,
     };
   },
 
   toJSON(message: Todo_MapOfTimestampsEntry): unknown {
     const obj: any = {};
-    message.key !== undefined && (obj.key = message.key);
-    message.value !== undefined && (obj.value = message.value.toISOString());
+    if (message.key !== "") {
+      obj.key = message.key;
+    }
+    if (message.value !== undefined) {
+      obj.value = message.value.toISOString();
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<Todo_MapOfTimestampsEntry>, I>>(base?: I): Todo_MapOfTimestampsEntry {
+    return Todo_MapOfTimestampsEntry.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<Todo_MapOfTimestampsEntry>, I>>(object: I): Todo_MapOfTimestampsEntry {
     const message = createBaseTodo_MapOfTimestampsEntry();
     message.key = object.key ?? "";
@@ -192,18 +239,19 @@ export interface Clock {
   Now(request: Empty): Promise<Timestamp>;
 }
 
+export const ClockServiceName = "Clock";
 export class ClockClientImpl implements Clock {
   private readonly rpc: Rpc;
   private readonly service: string;
   constructor(rpc: Rpc, opts?: { service?: string }) {
-    this.service = opts?.service || "Clock";
+    this.service = opts?.service || ClockServiceName;
     this.rpc = rpc;
     this.Now = this.Now.bind(this);
   }
   Now(request: Empty): Promise<Timestamp> {
     const data = Empty.encode(request).finish();
     const promise = this.rpc.request(this.service, "Now", data);
-    return promise.then((data) => Timestamp.decode(new _m0.Reader(data)));
+    return promise.then((data) => Timestamp.decode(_m0.Reader.create(data)));
   }
 }
 
@@ -230,7 +278,8 @@ interface Rpc {
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
 export type DeepPartial<T> = T extends Builtin ? T
-  : T extends Array<infer U> ? Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
+  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
   : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
 
@@ -245,16 +294,16 @@ function toTimestamp(date: Date): Timestamp {
 }
 
 function fromTimestamp(t: Timestamp): Date {
-  let millis = t.seconds * 1_000;
-  millis += t.nanos / 1_000_000;
-  return new Date(millis);
+  let millis = (t.seconds || 0) * 1_000;
+  millis += (t.nanos || 0) / 1_000_000;
+  return new globalThis.Date(millis);
 }
 
 function fromJsonTimestamp(o: any): Date {
-  if (o instanceof Date) {
+  if (o instanceof globalThis.Date) {
     return o;
   } else if (typeof o === "string") {
-    return new Date(o);
+    return new globalThis.Date(o);
   } else {
     return fromTimestamp(Timestamp.fromJSON(o));
   }

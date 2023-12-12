@@ -25,33 +25,43 @@ export const ProduceRequest = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): ProduceRequest {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseProduceRequest();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 10) {
+            break;
+          }
+
           message.ingredients = reader.string();
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): ProduceRequest {
-    return { ingredients: isSet(object.ingredients) ? String(object.ingredients) : "" };
+    return { ingredients: isSet(object.ingredients) ? globalThis.String(object.ingredients) : "" };
   },
 
   toJSON(message: ProduceRequest): unknown {
     const obj: any = {};
-    message.ingredients !== undefined && (obj.ingredients = message.ingredients);
+    if (message.ingredients !== "") {
+      obj.ingredients = message.ingredients;
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<ProduceRequest>, I>>(base?: I): ProduceRequest {
+    return ProduceRequest.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<ProduceRequest>, I>>(object: I): ProduceRequest {
     const message = createBaseProduceRequest();
     message.ingredients = object.ingredients ?? "";
@@ -72,33 +82,43 @@ export const ProduceReply = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): ProduceReply {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseProduceReply();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 10) {
+            break;
+          }
+
           message.result = reader.string();
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): ProduceReply {
-    return { result: isSet(object.result) ? String(object.result) : "" };
+    return { result: isSet(object.result) ? globalThis.String(object.result) : "" };
   },
 
   toJSON(message: ProduceReply): unknown {
     const obj: any = {};
-    message.result !== undefined && (obj.result = message.result);
+    if (message.result !== "") {
+      obj.result = message.result;
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<ProduceReply>, I>>(base?: I): ProduceReply {
+    return ProduceReply.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<ProduceReply>, I>>(object: I): ProduceReply {
     const message = createBaseProduceReply();
     message.result = object.result ?? "";
@@ -113,7 +133,8 @@ export interface Factory {
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
 export type DeepPartial<T> = T extends Builtin ? T
-  : T extends Array<infer U> ? Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
+  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
   : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
 

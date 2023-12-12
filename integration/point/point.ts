@@ -29,37 +29,56 @@ export const Point = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): Point {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBasePoint();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 9) {
+            break;
+          }
+
           message.lat = reader.double();
-          break;
+          continue;
         case 2:
+          if (tag !== 17) {
+            break;
+          }
+
           message.lng = reader.double();
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): Point {
-    return { lat: isSet(object.lat) ? Number(object.lat) : 0, lng: isSet(object.lng) ? Number(object.lng) : 0 };
+    return {
+      lat: isSet(object.lat) ? globalThis.Number(object.lat) : 0,
+      lng: isSet(object.lng) ? globalThis.Number(object.lng) : 0,
+    };
   },
 
   toJSON(message: Point): unknown {
     const obj: any = {};
-    message.lat !== undefined && (obj.lat = message.lat);
-    message.lng !== undefined && (obj.lng = message.lng);
+    if (message.lat !== 0) {
+      obj.lat = message.lat;
+    }
+    if (message.lng !== 0) {
+      obj.lng = message.lng;
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<Point>, I>>(base?: I): Point {
+    return Point.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<Point>, I>>(object: I): Point {
     const message = createBasePoint();
     message.lat = object.lat ?? 0;
@@ -84,22 +103,31 @@ export const Area = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): Area {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseArea();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 10) {
+            break;
+          }
+
           message.nw = Point.decode(reader, reader.uint32());
-          break;
+          continue;
         case 2:
+          if (tag !== 18) {
+            break;
+          }
+
           message.se = Point.decode(reader, reader.uint32());
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
@@ -113,11 +141,18 @@ export const Area = {
 
   toJSON(message: Area): unknown {
     const obj: any = {};
-    message.nw !== undefined && (obj.nw = message.nw ? Point.toJSON(message.nw) : undefined);
-    message.se !== undefined && (obj.se = message.se ? Point.toJSON(message.se) : undefined);
+    if (message.nw !== undefined) {
+      obj.nw = Point.toJSON(message.nw);
+    }
+    if (message.se !== undefined) {
+      obj.se = Point.toJSON(message.se);
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<Area>, I>>(base?: I): Area {
+    return Area.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<Area>, I>>(object: I): Area {
     const message = createBaseArea();
     message.nw = (object.nw !== undefined && object.nw !== null) ? Point.fromPartial(object.nw) : undefined;
@@ -129,7 +164,8 @@ export const Area = {
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
 export type DeepPartial<T> = T extends Builtin ? T
-  : T extends Array<infer U> ? Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
+  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
   : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
 

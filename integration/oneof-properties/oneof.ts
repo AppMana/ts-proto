@@ -131,88 +131,155 @@ export const PleaseChoose = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): PleaseChoose {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBasePleaseChoose();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 10) {
+            break;
+          }
+
           message.name = reader.string();
-          break;
+          continue;
         case 2:
+          if (tag !== 17) {
+            break;
+          }
+
           message.aNumber = reader.double();
-          break;
+          continue;
         case 3:
+          if (tag !== 26) {
+            break;
+          }
+
           message.aString = reader.string();
-          break;
+          continue;
         case 4:
+          if (tag !== 34) {
+            break;
+          }
+
           message.aMessage = PleaseChoose_Submessage.decode(reader, reader.uint32());
-          break;
+          continue;
         case 6:
+          if (tag !== 48) {
+            break;
+          }
+
           message.aBool = reader.bool();
-          break;
+          continue;
         case 10:
+          if (tag !== 82) {
+            break;
+          }
+
           message.bunchaBytes = reader.bytes();
-          break;
+          continue;
         case 11:
+          if (tag !== 88) {
+            break;
+          }
+
           message.anEnum = reader.int32() as any;
-          break;
+          continue;
         case 5:
+          if (tag !== 40) {
+            break;
+          }
+
           message.age = reader.uint32();
-          break;
+          continue;
         case 7:
+          if (tag !== 58) {
+            break;
+          }
+
           message.either = reader.string();
-          break;
+          continue;
         case 8:
+          if (tag !== 66) {
+            break;
+          }
+
           message.or = reader.string();
-          break;
+          continue;
         case 9:
+          if (tag !== 74) {
+            break;
+          }
+
           message.thirdOption = reader.string();
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): PleaseChoose {
     return {
-      name: isSet(object.name) ? String(object.name) : "",
-      aNumber: isSet(object.aNumber) ? Number(object.aNumber) : undefined,
-      aString: isSet(object.aString) ? String(object.aString) : undefined,
+      name: isSet(object.name) ? globalThis.String(object.name) : "",
+      aNumber: isSet(object.aNumber) ? globalThis.Number(object.aNumber) : undefined,
+      aString: isSet(object.aString) ? globalThis.String(object.aString) : undefined,
       aMessage: isSet(object.aMessage) ? PleaseChoose_Submessage.fromJSON(object.aMessage) : undefined,
-      aBool: isSet(object.aBool) ? Boolean(object.aBool) : undefined,
+      aBool: isSet(object.aBool) ? globalThis.Boolean(object.aBool) : undefined,
       bunchaBytes: isSet(object.bunchaBytes) ? bytesFromBase64(object.bunchaBytes) : undefined,
       anEnum: isSet(object.anEnum) ? pleaseChoose_StateEnumFromJSON(object.anEnum) : undefined,
-      age: isSet(object.age) ? Number(object.age) : 0,
-      either: isSet(object.either) ? String(object.either) : undefined,
-      or: isSet(object.or) ? String(object.or) : undefined,
-      thirdOption: isSet(object.thirdOption) ? String(object.thirdOption) : undefined,
+      age: isSet(object.age) ? globalThis.Number(object.age) : 0,
+      either: isSet(object.either) ? globalThis.String(object.either) : undefined,
+      or: isSet(object.or) ? globalThis.String(object.or) : undefined,
+      thirdOption: isSet(object.thirdOption) ? globalThis.String(object.thirdOption) : undefined,
     };
   },
 
   toJSON(message: PleaseChoose): unknown {
     const obj: any = {};
-    message.name !== undefined && (obj.name = message.name);
-    message.aNumber !== undefined && (obj.aNumber = message.aNumber);
-    message.aString !== undefined && (obj.aString = message.aString);
-    message.aMessage !== undefined &&
-      (obj.aMessage = message.aMessage ? PleaseChoose_Submessage.toJSON(message.aMessage) : undefined);
-    message.aBool !== undefined && (obj.aBool = message.aBool);
-    message.bunchaBytes !== undefined &&
-      (obj.bunchaBytes = message.bunchaBytes !== undefined ? base64FromBytes(message.bunchaBytes) : undefined);
-    message.anEnum !== undefined &&
-      (obj.anEnum = message.anEnum !== undefined ? pleaseChoose_StateEnumToJSON(message.anEnum) : undefined);
-    message.age !== undefined && (obj.age = Math.round(message.age));
-    message.either !== undefined && (obj.either = message.either);
-    message.or !== undefined && (obj.or = message.or);
-    message.thirdOption !== undefined && (obj.thirdOption = message.thirdOption);
+    if (message.name !== "") {
+      obj.name = message.name;
+    }
+    if (message.aNumber !== undefined) {
+      obj.aNumber = message.aNumber;
+    }
+    if (message.aString !== undefined) {
+      obj.aString = message.aString;
+    }
+    if (message.aMessage !== undefined) {
+      obj.aMessage = PleaseChoose_Submessage.toJSON(message.aMessage);
+    }
+    if (message.aBool !== undefined) {
+      obj.aBool = message.aBool;
+    }
+    if (message.bunchaBytes !== undefined) {
+      obj.bunchaBytes = base64FromBytes(message.bunchaBytes);
+    }
+    if (message.anEnum !== undefined) {
+      obj.anEnum = pleaseChoose_StateEnumToJSON(message.anEnum);
+    }
+    if (message.age !== 0) {
+      obj.age = Math.round(message.age);
+    }
+    if (message.either !== undefined) {
+      obj.either = message.either;
+    }
+    if (message.or !== undefined) {
+      obj.or = message.or;
+    }
+    if (message.thirdOption !== undefined) {
+      obj.thirdOption = message.thirdOption;
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<PleaseChoose>, I>>(base?: I): PleaseChoose {
+    return PleaseChoose.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<PleaseChoose>, I>>(object: I): PleaseChoose {
     const message = createBasePleaseChoose();
     message.name = object.name ?? "";
@@ -245,58 +312,49 @@ export const PleaseChoose_Submessage = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): PleaseChoose_Submessage {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBasePleaseChoose_Submessage();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 10) {
+            break;
+          }
+
           message.name = reader.string();
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): PleaseChoose_Submessage {
-    return { name: isSet(object.name) ? String(object.name) : "" };
+    return { name: isSet(object.name) ? globalThis.String(object.name) : "" };
   },
 
   toJSON(message: PleaseChoose_Submessage): unknown {
     const obj: any = {};
-    message.name !== undefined && (obj.name = message.name);
+    if (message.name !== "") {
+      obj.name = message.name;
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<PleaseChoose_Submessage>, I>>(base?: I): PleaseChoose_Submessage {
+    return PleaseChoose_Submessage.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<PleaseChoose_Submessage>, I>>(object: I): PleaseChoose_Submessage {
     const message = createBasePleaseChoose_Submessage();
     message.name = object.name ?? "";
     return message;
   },
 };
-
-declare var self: any | undefined;
-declare var window: any | undefined;
-declare var global: any | undefined;
-var globalThis: any = (() => {
-  if (typeof globalThis !== "undefined") {
-    return globalThis;
-  }
-  if (typeof self !== "undefined") {
-    return self;
-  }
-  if (typeof window !== "undefined") {
-    return window;
-  }
-  if (typeof global !== "undefined") {
-    return global;
-  }
-  throw "Unable to locate global object";
-})();
 
 function bytesFromBase64(b64: string): Uint8Array {
   if (globalThis.Buffer) {
@@ -317,7 +375,7 @@ function base64FromBytes(arr: Uint8Array): string {
   } else {
     const bin: string[] = [];
     arr.forEach((byte) => {
-      bin.push(String.fromCharCode(byte));
+      bin.push(globalThis.String.fromCharCode(byte));
     });
     return globalThis.btoa(bin.join(""));
   }
@@ -326,7 +384,8 @@ function base64FromBytes(arr: Uint8Array): string {
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
 export type DeepPartial<T> = T extends Builtin ? T
-  : T extends Array<infer U> ? Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
+  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
   : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
 

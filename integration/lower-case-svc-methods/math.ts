@@ -34,37 +34,56 @@ export const NumPair = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): NumPair {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseNumPair();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 9) {
+            break;
+          }
+
           message.num1 = reader.double();
-          break;
+          continue;
         case 2:
+          if (tag !== 17) {
+            break;
+          }
+
           message.num2 = reader.double();
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): NumPair {
-    return { num1: isSet(object.num1) ? Number(object.num1) : 0, num2: isSet(object.num2) ? Number(object.num2) : 0 };
+    return {
+      num1: isSet(object.num1) ? globalThis.Number(object.num1) : 0,
+      num2: isSet(object.num2) ? globalThis.Number(object.num2) : 0,
+    };
   },
 
   toJSON(message: NumPair): unknown {
     const obj: any = {};
-    message.num1 !== undefined && (obj.num1 = message.num1);
-    message.num2 !== undefined && (obj.num2 = message.num2);
+    if (message.num1 !== 0) {
+      obj.num1 = message.num1;
+    }
+    if (message.num2 !== 0) {
+      obj.num2 = message.num2;
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<NumPair>, I>>(base?: I): NumPair {
+    return NumPair.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<NumPair>, I>>(object: I): NumPair {
     const message = createBaseNumPair();
     message.num1 = object.num1 ?? 0;
@@ -86,33 +105,43 @@ export const NumSingle = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): NumSingle {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseNumSingle();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
+          if (tag !== 9) {
+            break;
+          }
+
           message.num = reader.double();
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
+          continue;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): NumSingle {
-    return { num: isSet(object.num) ? Number(object.num) : 0 };
+    return { num: isSet(object.num) ? globalThis.Number(object.num) : 0 };
   },
 
   toJSON(message: NumSingle): unknown {
     const obj: any = {};
-    message.num !== undefined && (obj.num = message.num);
+    if (message.num !== 0) {
+      obj.num = message.num;
+    }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<NumSingle>, I>>(base?: I): NumSingle {
+    return NumSingle.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<NumSingle>, I>>(object: I): NumSingle {
     const message = createBaseNumSingle();
     message.num = object.num ?? 0;
@@ -135,44 +164,53 @@ export const Numbers = {
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): Numbers {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseNumbers();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          if ((tag & 7) === 2) {
+          if (tag === 9) {
+            message.num.push(reader.double());
+
+            continue;
+          }
+
+          if (tag === 10) {
             const end2 = reader.uint32() + reader.pos;
             while (reader.pos < end2) {
               message.num.push(reader.double());
             }
-          } else {
-            message.num.push(reader.double());
+
+            continue;
           }
-          break;
-        default:
-          reader.skipType(tag & 7);
+
           break;
       }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
     }
     return message;
   },
 
   fromJSON(object: any): Numbers {
-    return { num: Array.isArray(object?.num) ? object.num.map((e: any) => Number(e)) : [] };
+    return { num: globalThis.Array.isArray(object?.num) ? object.num.map((e: any) => globalThis.Number(e)) : [] };
   },
 
   toJSON(message: Numbers): unknown {
     const obj: any = {};
-    if (message.num) {
-      obj.num = message.num.map((e) => e);
-    } else {
-      obj.num = [];
+    if (message.num?.length) {
+      obj.num = message.num;
     }
     return obj;
   },
 
+  create<I extends Exact<DeepPartial<Numbers>, I>>(base?: I): Numbers {
+    return Numbers.fromPartial(base ?? ({} as any));
+  },
   fromPartial<I extends Exact<DeepPartial<Numbers>, I>>(object: I): Numbers {
     const message = createBaseNumbers();
     message.num = object.num?.map((e) => e) || [];
@@ -187,11 +225,12 @@ export interface MathService<Context extends DataLoaders> {
   getDouble(ctx: Context, nu: number): Promise<number>;
 }
 
+export const MathServiceServiceName = "MathService";
 export class MathServiceClientImpl<Context extends DataLoaders> implements MathService<Context> {
   private readonly rpc: Rpc<Context>;
   private readonly service: string;
   constructor(rpc: Rpc<Context>, opts?: { service?: string }) {
-    this.service = opts?.service || "MathService";
+    this.service = opts?.service || MathServiceServiceName;
     this.rpc = rpc;
     this.add = this.add.bind(this);
     this.absoluteValue = this.absoluteValue.bind(this);
@@ -200,20 +239,20 @@ export class MathServiceClientImpl<Context extends DataLoaders> implements MathS
   add(ctx: Context, request: NumPair): Promise<NumSingle> {
     const data = NumPair.encode(request).finish();
     const promise = this.rpc.request(ctx, this.service, "Add", data);
-    return promise.then((data) => NumSingle.decode(new _m0.Reader(data)));
+    return promise.then((data) => NumSingle.decode(_m0.Reader.create(data)));
   }
 
   absoluteValue(ctx: Context, request: NumSingle): Promise<NumSingle> {
     const data = NumSingle.encode(request).finish();
     const promise = this.rpc.request(ctx, this.service, "AbsoluteValue", data);
-    return promise.then((data) => NumSingle.decode(new _m0.Reader(data)));
+    return promise.then((data) => NumSingle.decode(_m0.Reader.create(data)));
   }
 
   getDouble(ctx: Context, nu: number): Promise<number> {
     const dl = ctx.getDataLoader("MathService.BatchDouble", () => {
-      return new DataLoader<number, number>((num) => {
+      return new DataLoader<number, number, string>((num) => {
         const request = { num };
-        return this.batchDouble(ctx, request).then((res) => res.num);
+        return this.batchDouble(ctx, request as any).then((res) => res.num);
       }, { cacheKeyFn: hash, ...ctx.rpcDataLoaderOptions });
     });
     return dl.load(nu);
@@ -222,7 +261,7 @@ export class MathServiceClientImpl<Context extends DataLoaders> implements MathS
   batchDouble(ctx: Context, request: Numbers): Promise<Numbers> {
     const data = Numbers.encode(request).finish();
     const promise = this.rpc.request(ctx, this.service, "BatchDouble", data);
-    return promise.then((data) => Numbers.decode(new _m0.Reader(data)));
+    return promise.then((data) => Numbers.decode(_m0.Reader.create(data)));
   }
 }
 
@@ -242,7 +281,8 @@ export interface DataLoaders {
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
 export type DeepPartial<T> = T extends Builtin ? T
-  : T extends Array<infer U> ? Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
+  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
   : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
 
