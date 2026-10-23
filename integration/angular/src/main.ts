@@ -5,7 +5,7 @@ import { AppModule } from './app/app.module';
 import { environment } from './environments/environment';
 
 import * as protobuf from 'protobufjs/minimal';
-import * as Long from 'long';
+import Long = require("long");
 
 // Workaround for "smart" protobuf.js
 // It tries to detect if long.js is available and only requires it then.

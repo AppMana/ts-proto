@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { util, configure, Writer, Reader } from 'protobufjs/minimal';
-import * as Long from 'long';
+import Long = require("long");
 import { grpc } from '@improbable-eng/grpc-web';
 import { Observable } from 'rxjs';
 import { BrowserHeaders } from 'browser-headers';

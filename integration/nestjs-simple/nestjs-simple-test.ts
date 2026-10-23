@@ -71,6 +71,7 @@ describe("nestjs-simple-test nestjs", () => {
     const villains: Villain[] = [];
 
     heroService.findManyVillain(villainIdSubject.asObservable()).subscribe({
+      error: done,
       next: (villain) => {
         villains.push(villain);
       },
