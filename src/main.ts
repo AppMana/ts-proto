@@ -980,12 +980,12 @@ function generateBaseInstanceFactory(
     const val = isWithinOneOf(field)
       ? "undefined"
       : isMapType(ctx, messageDesc, field)
-      ? shouldGenerateJSMapType(ctx, messageDesc, field)
-        ? "new Map()"
-        : "{}"
-      : isRepeated(field)
-      ? "[]"
-      : defaultValue(ctx, field);
+        ? shouldGenerateJSMapType(ctx, messageDesc, field)
+          ? "new Map()"
+          : "{}"
+        : isRepeated(field)
+          ? "[]"
+          : defaultValue(ctx, field);
 
     fields.push(code`${fieldKey}: ${val}`);
   }

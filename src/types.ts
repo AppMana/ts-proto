@@ -498,8 +498,8 @@ export function valueTypeName(ctx: Context, typeName: string): Code | undefined 
       return ctx.options.env === EnvOption.NODE
         ? code`Buffer`
         : ctx.options.useJsonWireFormat
-        ? code`string`
-        : code`Uint8Array`;
+          ? code`string`
+          : code`Uint8Array`;
     case ".google.protobuf.ListValue":
       return ctx.options.useReadonlyTypes ? code`ReadonlyArray<any>` : code`Array<any>`;
     case ".google.protobuf.Value":
@@ -510,8 +510,8 @@ export function valueTypeName(ctx: Context, typeName: string): Code | undefined 
       return ctx.options.useJsonWireFormat
         ? code`string`
         : ctx.options.useReadonlyTypes
-        ? code`readonly string[]`
-        : code`string[]`;
+          ? code`readonly string[]`
+          : code`string[]`;
     case ".google.protobuf.Duration":
       return ctx.options.useJsonWireFormat ? code`string` : undefined;
     case ".google.protobuf.Timestamp":
@@ -741,8 +741,7 @@ export function requestType(ctx: Context, methodDesc: MethodDescriptorProto, par
     typeName = code`${ctx.utils.DeepPartial}<${typeName}>`;
   }
 
-  const { options } = ctx;
-  if (options.nestJs && methodDesc.clientStreaming) {
+  if (methodDesc.clientStreaming) {
     return code`${observableType(ctx)}<${typeName}>`;
   }
   return typeName;

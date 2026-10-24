@@ -40,9 +40,8 @@ jobs:
       - name: test esmodule interop
         working-directory: ./integration/simple-esmodule-interop
         run: |
-          yarn install
-          yarn tsc
-          yarn jest
+          node ../../node_modules/typescript/bin/tsc
+          node ../../node_modules/jest/bin/jest.js --config jest.config.js --runInBand
         env:
           CI: true
 

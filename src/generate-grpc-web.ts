@@ -32,18 +32,13 @@ export function generateGrpcClientImpl(
   // Bind each FooService method to the FooServiceImpl class
   for (const methodDesc of serviceDesc.method) {
     assertInstanceOf(methodDesc, FormattedMethodDescriptor);
-    if (!methodDesc.clientStreaming) {
-      chunks.push(code`this.${methodDesc.formattedName} = this.${methodDesc.formattedName}.bind(this);`);
-    }
+    chunks.push(code`this.${methodDesc.formattedName} = this.${methodDesc.formattedName}.bind(this);`);
   }
   chunks.push(code`}`);
 
   // Create a method for each FooService method
   for (const methodDesc of serviceDesc.method) {
-    // not supported by improbable-web
-    if (!methodDesc.clientStreaming) {
-      chunks.push(generateRpcMethod(ctx, serviceDesc, methodDesc));
-    }
+    chunks.push(generateRpcMethod(ctx, serviceDesc, methodDesc));
   }
 
   chunks.push(code`}`);

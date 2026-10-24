@@ -29,7 +29,7 @@ async function main() {
   try {
     await creds.Update({ description: 'test desc2' });
   } catch (e) {
-    console.log('got expected error', e.message);
+    console.log('got expected error', e instanceof Error ? e.message : String(e));
   }
 
   const obs = client.ActiveUserSettingsStream({});

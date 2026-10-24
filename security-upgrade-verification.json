@@ -7,7 +7,7 @@
     "jest": "30.5.2",
     "dataloader": "2.2.3"
   },
-  "generator_fix": "Apply updated method descriptors to the controller prototype so NestJS streaming wrappers can drain buffered requests.",
+  "generator_fix": "Apply updated method descriptors to the controller prototype so NestJS streaming wrappers can drain buffered requests. Preserve streaming request wrappers outside NestJS and emit explicit errors for unsupported gRPC-Web streaming methods.",
   "validation": {
     "typescript_compiler": "passed",
     "jest_suites": 93,
@@ -16,11 +16,14 @@
     "snapshots": 94,
     "audit_high": 0,
     "audit_critical": 0,
-    "audit_moderate": 3
+    "audit_moderate": 3,
+    "all_five_typescript_configs": "passed",
+    "full_regeneration": "passed and repeated without changes",
+    "separate_esmodule_interop_test": "passed"
   },
   "limits": [
     "Standalone release publishing was not exercised.",
-    "Jest configuration retains its two existing ESM integration exclusions.",
+    "The separate batching ESM configuration remains outside the existing Jest suite.",
     "Four existing test skips remain."
   ]
 }

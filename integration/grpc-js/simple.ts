@@ -1,23 +1,21 @@
 /* eslint-disable */
 import {
+  type CallOptions,
   ChannelCredentials,
   Client,
   ClientDuplexStream,
+  type ClientOptions,
   ClientReadableStream,
+  type ClientUnaryCall,
   ClientWritableStream,
   handleBidiStreamingCall,
   handleClientStreamingCall,
   handleServerStreamingCall,
+  type handleUnaryCall,
   makeGenericClientConstructor,
   Metadata,
-} from "@grpc/grpc-js";
-import type {
-  CallOptions,
-  ClientOptions,
-  ClientUnaryCall,
-  handleUnaryCall,
-  ServiceError,
-  UntypedServiceImplementation,
+  type ServiceError,
+  type UntypedServiceImplementation,
 } from "@grpc/grpc-js";
 import * as _m0 from "protobufjs/minimal";
 import { Empty } from "./google/protobuf/empty";

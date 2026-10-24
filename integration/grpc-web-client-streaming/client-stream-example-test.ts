@@ -1,3 +1,4 @@
+import { EMPTY } from 'rxjs';
 import { DashStateClientImpl } from './client-stream-example';
 
 describe('grpc-web', () => {
@@ -20,13 +21,12 @@ describe('grpc-web', () => {
     const userSettings = client.UserSettings;
     userSettings({});
   });
-  it('checks that ChangeUserSettingsStream is undefined because client streaming', () => {
+  it('rejects unsupported client streaming with an explicit error', () => {
     const rpc = {
       unary: jest.fn(),
       invoke: jest.fn(),
     };
     const client = new DashStateClientImpl(rpc);
-    //@ts-expect-error ChangeUserSettingsStream
-    expect(client['ChangeUserSettingsStream']).toBeUndefined();
+    expect(() => client.ChangeUserSettingsStream(EMPTY)).toThrow('ts-proto does not yet support client streaming!');
   });
 });
