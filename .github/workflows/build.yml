@@ -12,16 +12,18 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x, 18.x, 20.x]
+        node-version: [26.12.1]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
           node-version: ${{ matrix.node-version }}
+      - name: Enable Yarn
+        run: npm install --global corepack@0.36.0 && corepack enable
       - name: install dependencies
         run: yarn install
       - name: Prepare Integration
@@ -38,9 +40,8 @@ jobs:
       - name: test esmodule interop
         working-directory: ./integration/simple-esmodule-interop
         run: |
-          yarn install
-          yarn tsc
-          yarn jest
+          node ../../node_modules/typescript/bin/tsc
+          node ../../node_modules/jest/bin/jest.js --config jest.config.js --runInBand
         env:
           CI: true
 
@@ -50,13 +51,15 @@ jobs:
     needs: [build]
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
       - name: Setup Node.js
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
-          node-version: 18.x
+          node-version: 26.12.1
+      - name: Enable Yarn
+        run: npm install --global corepack@0.36.0 && corepack enable
       - name: Install
         run: yarn install
       - name: Build

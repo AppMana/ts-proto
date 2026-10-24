@@ -1,5 +1,5 @@
 import { Controller } from "@nestjs/common";
-import { Observable, Subject } from "rxjs";
+import { Observable, map } from "rxjs";
 import { Hero, HeroById, HeroServiceController, HeroServiceControllerMethods, Villain, VillainById } from "../hero";
 
 @Controller("hero")
@@ -29,16 +29,7 @@ export class HeroController implements HeroServiceController {
   }
 
   findManyVillain(request: Observable<VillainById>): Observable<Villain> {
-    const hero$ = new Subject<Villain>();
-
-    const onNext = (villainById: VillainById) => {
-      const item = this.villains.find(({ id }) => id === villainById.id);
-      hero$.next(item!);
-    };
-    const onComplete = () => hero$.complete();
-    request.subscribe(onNext, null, onComplete);
-
-    return hero$.asObservable();
+    return request.pipe(map(({ id }) => this.villains.find((villain) => villain.id === id)!));
   }
 
   findManyVillainStreamIn(request: Observable<VillainById>): Observable<Villain> {
