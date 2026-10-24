@@ -9,7 +9,7 @@
     "protoc-gen-ts_proto": "./protoc-gen-ts_proto"
   },
   "scripts": {
-    "build": "yarn tsc",
+    "build": "tsc",
     "build:test": "yarn proto2bin && yarn proto2pbjs && yarn bin2ts",
     "prepare": "yarn build",
     "proto2bin": "docker compose run --rm protoc update-bins.sh",
