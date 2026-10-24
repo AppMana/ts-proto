@@ -3,7 +3,7 @@ import { createApp } from "./nestjs-project/main";
 import { INestMicroservice } from "@nestjs/common";
 import { ClientGrpc } from "@nestjs/microservices";
 import { HeroServiceClient, VillainById, Villain, HERO_SERVICE_NAME, HERO_PACKAGE_NAME } from "./hero";
-import { Subject } from "rxjs";
+import { from, lastValueFrom, toArray } from "rxjs";
 
 describe("nestjs-simple-usedate-test", () => {
   it("compiles", () => {
@@ -66,25 +66,11 @@ describe("nestjs-simple-usedate-test nestjs", () => {
     expect(villain).toEqual({ id: 1, name: "John" });
   });
 
-  it("should findManyVillain", (done) => {
-    const villainIdSubject = new Subject<VillainById>();
-    const villains: Villain[] = [];
-
-    heroService.findManyVillain(villainIdSubject.asObservable()).subscribe({
-      next: (villain) => {
-        villains.push(villain);
-      },
-      complete: () => {
-        expect(villains).toEqual([
-          { id: 1, name: "John" },
-          { id: 2, name: "Doe" },
-        ]);
-        done();
-      },
-    });
-
-    villainIdSubject.next({ id: 1 });
-    villainIdSubject.next({ id: 2 });
-    villainIdSubject.complete();
+  it("should findManyVillain", async () => {
+    const villains = await lastValueFrom(heroService.findManyVillain(from([{ id: 1 }, { id: 2 }])).pipe(toArray()));
+    expect(villains).toEqual([
+      { id: 1, name: "John" },
+      { id: 2, name: "Doe" },
+    ]);
   });
 });

@@ -1,0 +1,26 @@
+{
+  "runtime": "Node 26.12.1",
+  "package_manager": "Yarn 4.18.1",
+  "dependencies": {
+    "nestjs": "12.2.0",
+    "semantic-release": "25.0.9",
+    "jest": "30.5.2",
+    "dataloader": "2.2.3"
+  },
+  "generator_fix": "Apply updated method descriptors to the controller prototype so NestJS streaming wrappers can drain buffered requests.",
+  "validation": {
+    "typescript_compiler": "passed",
+    "jest_suites": 93,
+    "jest_tests_passed": 303,
+    "jest_tests_skipped": 4,
+    "snapshots": 94,
+    "audit_high": 0,
+    "audit_critical": 0,
+    "audit_moderate": 3
+  },
+  "limits": [
+    "Standalone release publishing was not exercised.",
+    "Jest configuration retains its two existing ESM integration exclusions.",
+    "Four existing test skips remain."
+  ]
+}

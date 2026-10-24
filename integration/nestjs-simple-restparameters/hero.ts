@@ -25,12 +25,14 @@ export function HeroServiceControllerMethods() {
     const grpcMethods: string[] = ["findCurrentUser"];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
-      GrpcMethod("HeroService", method)(constructor.prototype[method], method, descriptor);
+      GrpcMethod("HeroService", method)(constructor.prototype, method, descriptor);
+      Object.defineProperty(constructor.prototype, method, descriptor);
     }
     const grpcStreamMethods: string[] = [];
     for (const method of grpcStreamMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
-      GrpcStreamMethod("HeroService", method)(constructor.prototype[method], method, descriptor);
+      GrpcStreamMethod("HeroService", method)(constructor.prototype, method, descriptor);
+      Object.defineProperty(constructor.prototype, method, descriptor);
     }
   };
 }
